@@ -20,6 +20,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
+import SecondsTimer
+
 public class PomodoroTimer {
     
     // MARK: - Initializers
@@ -54,6 +56,15 @@ public class PomodoroTimer {
         return _longBreakDuration
     }
     
+    // MARK: - Timer
+    private var _timer: STimer?
     
+    public var isActive: Bool {
+        return _timer?.isActive ?? false
+    }
+    
+    public var secondsRemaining: Int {
+        return _timer?.secondsRemaining ?? 0
+    }
     
 }
