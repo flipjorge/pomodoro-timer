@@ -25,6 +25,12 @@ import XCTest
 
 final class PomodoroTimerTests: XCTestCase {
     
+    // MARK: - Properties
+    private let _secondsPerMinute = 60
+    private let _defaultFocusMinutes = 25
+    private let _defaultShortBreakMinutes = 5
+    private let _defaultLongBreakMinutes = 15
+    
     // MARK: - Setup
     var timer: PomodoroTimer!
     
@@ -42,9 +48,9 @@ final class PomodoroTimerTests: XCTestCase {
     func test_init_givenNoArgs_setDefaultProperties() {
         timer = PomodoroTimer()
         
-        XCTAssertEqual(timer.focusDuration, 25)
-        XCTAssertEqual(timer.shortBreakDuration, 5)
-        XCTAssertEqual(timer.longBreakDuration, 15)
+        XCTAssertEqual(timer.focusDuration, _defaultFocusMinutes)
+        XCTAssertEqual(timer.shortBreakDuration, _defaultShortBreakMinutes)
+        XCTAssertEqual(timer.longBreakDuration, _defaultLongBreakMinutes)
     }
     
     func test_init_givenValidArgs_initializesWithCorrectValues() {
@@ -56,7 +62,7 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_init_givenInvalidArgs_failsInit() {
-        timer = PomodoroTimer(focus: -10, short: 5, long: 15)
+        timer = PomodoroTimer(focus: -10, short: _defaultShortBreakMinutes, long: _defaultLongBreakMinutes)
         
         XCTAssertNil(timer)
     }
@@ -70,7 +76,7 @@ final class PomodoroTimerTests: XCTestCase {
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertTrue(timer.isActive)
-            XCTAssertLessThan(timer.secondsRemaining, 25*60)
+            XCTAssertLessThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, 0)
         } else {
             XCTFail()
@@ -87,7 +93,7 @@ final class PomodoroTimerTests: XCTestCase {
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertFalse(timer.isActive)
-            XCTAssertEqual(timer.secondsRemaining, 25*60)
+            XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
         } else {
             XCTFail()
         }
@@ -104,7 +110,7 @@ final class PomodoroTimerTests: XCTestCase {
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertTrue(timer.isActive)
-            XCTAssertLessThan(timer.secondsRemaining, 25*60)
+            XCTAssertLessThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, 0)
         } else {
             XCTFail()
