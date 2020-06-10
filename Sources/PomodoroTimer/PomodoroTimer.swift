@@ -82,4 +82,12 @@ public class PomodoroTimer {
         
         timer.pause()
     }
+    
+    // MARK: - Resume
+    public func resume() {
+        guard let timer = _timer else { return }
+        
+        timer.resume()
+    }
+    
 }
