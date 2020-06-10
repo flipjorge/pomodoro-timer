@@ -67,4 +67,13 @@ public class PomodoroTimer {
         return _timer?.secondsRemaining ?? 0
     }
     
+    // MARK: - Start Focus
+    public func startFocus() {
+        //stop current time
+        
+        _timer = STimer()
+        guard let timer = _timer else { return }
+        timer.start(_focusDuration*60)
+    }
+    
 }
