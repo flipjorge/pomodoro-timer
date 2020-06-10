@@ -25,12 +25,16 @@ import SecondsTimer
 public class PomodoroTimer {
     
     // MARK: - Initializers
-    public init() { }
+    public init() {
+        _timer = STimer()
+    }
     
-    public init?(focus: Int, short: Int, long: Int) {
+    public convenience init?(focus: Int, short: Int, long: Int) {
         guard focus > 0, short > 0, long > 0 else {
             return nil
         }
+        
+        self.init()
         
         _focusDuration = focus
         _shortBreakDuration = short
@@ -57,37 +61,28 @@ public class PomodoroTimer {
     }
     
     // MARK: - Timer
-    private var _timer: STimer?
+    private var _timer: STimer
     
     public var isActive: Bool {
-        return _timer?.isActive ?? false
+        return _timer.isActive
     }
     
     public var secondsRemaining: Int {
-        return _timer?.secondsRemaining ?? 0
+        return _timer.secondsRemaining
     }
     
     // MARK: - Start Focus
     public func startFocus() {
-        //stop current time
-        
-        _timer = STimer()
-        guard let timer = _timer else { return }
-        timer.start(_focusDuration*60)
+        _timer.start(_focusDuration*60)
     }
     
     // MARK: - Pause
     public func pause() {
-        guard let timer = _timer else { return }
-        
-        timer.pause()
+        _timer.pause()
     }
     
     // MARK: - Resume
     public func resume() {
-        guard let timer = _timer else { return }
-        
-        timer.resume()
+        _timer.resume()
     }
-    
 }
