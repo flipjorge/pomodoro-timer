@@ -179,4 +179,32 @@ final class PomodoroTimerTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    // MARK: - Session
+    func test_session_initializesIdle() {
+        timer = PomodoroTimer()
+        
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
+    }
+    
+    func test_session_startSession_setToRespectiveSessionType() {
+        timer = PomodoroTimer()
+        
+        timer.startFocus()
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Focus)
+        
+        timer.startShortBreak()
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.ShortBreak)
+        
+        timer.startLongBreak()
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.LongBreak)
+    }
+    
+    func test_session_cancelSession_setToCancelType() {
+        timer = PomodoroTimer()
+        timer.startFocus()
+        timer.cancel()
+        
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
+    }
 }
