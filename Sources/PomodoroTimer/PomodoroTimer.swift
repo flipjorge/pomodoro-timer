@@ -158,24 +158,9 @@ public class PomodoroTimer {
 
 // MARK: - STimerDelegate
 extension PomodoroTimer: STimerDelegate {
-    public func clock(_ clock: STimer, didStartWithSeconds seconds: Int) {
-        //
-    }
-    
+
     public func clock(_ clock: STimer, didTickWithSeconds seconds: Int) {
         delegate?.pomodoroTimer(self, didTickWith: seconds)
-    }
-    
-    public func clock(_ clock: STimer, didStopAtSeconds seconds: Int) {
-        //
-    }
-    
-    public func clock(_ clock: STimer, didPauseAtSeconds seconds: Int) {
-        //
-    }
-    
-    public func clock(_ clock: STimer, didResumeWithSeconds seconds: Int) {
-        //
     }
     
     public func clockDidEnd(_ clock: STimer) {
