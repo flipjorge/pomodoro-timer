@@ -27,6 +27,7 @@ public class PomodoroTimer {
     // MARK: - Initializers
     public init() {
         _timer = STimer()
+        _timer.delegate = self
     }
     
     public convenience init?(focus: Int, short: Int, long: Int) {
@@ -40,6 +41,9 @@ public class PomodoroTimer {
         _shortBreakDuration = short
         _longBreakDuration = long
     }
+    
+    // MARK: - Delegate
+    public var delegate: PomodoroTimerDelegate?
     
     // MARK: - Properties
     private var _focusDuration: Int = 25
@@ -87,32 +91,71 @@ public class PomodoroTimer {
     public func startFocus() {
         _timer.start(_focusDuration*_secondsPerMinute)
         _session = .Focus
+        
+        delegate?.pomodoroTimer(self, didStartSession: _session)
     }
     
     // MARK: - Start Break
     public func startShortBreak() {
         _timer.start(_shortBreakDuration*_secondsPerMinute)
         _session = .ShortBreak
+        
+        delegate?.pomodoroTimer(self, didStartSession: _session)
     }
     
     public func startLongBreak() {
         _timer.start(_longBreakDuration*_secondsPerMinute)
         _session = .LongBreak
+        
+        delegate?.pomodoroTimer(self, didStartSession: _session)
     }
     
     // MARK: - Pause
     public func pause() {
         _timer.pause()
+        
+        delegate?.pomodoroTimer(self, didPauseSession: _session)
     }
     
     // MARK: - Resume
     public func resume() {
         _timer.resume()
+        
+        delegate?.pomodoroTimer(self, didResumeSession: _session)
     }
     
     // MARK: - Cancel
     public func cancel() {
         _timer.stop()
         _session = .Idle
+        
+        delegate?.pomodoroTimerDidCancel(self)
+    }
+}
+
+// MARK: - STimerDelegate
+extension PomodoroTimer: STimerDelegate {
+    public func clock(_ clock: STimer, didStartWithSeconds seconds: Int) {
+        //
+    }
+    
+    public func clock(_ clock: STimer, didTickWithSeconds seconds: Int) {
+        delegate?.pomodoroTimer(self, didTickWith: seconds)
+    }
+    
+    public func clock(_ clock: STimer, didStopAtSeconds seconds: Int) {
+        //
+    }
+    
+    public func clock(_ clock: STimer, didPauseAtSeconds seconds: Int) {
+        //
+    }
+    
+    public func clock(_ clock: STimer, didResumeWithSeconds seconds: Int) {
+        //
+    }
+    
+    public func clockDidEnd(_ clock: STimer) {
+        delegate?.pomodoroTimer(self, didEndSession: _session)
     }
 }

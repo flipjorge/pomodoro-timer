@@ -41,6 +41,7 @@ final class PomodoroTimerTests: XCTestCase {
     
     override func tearDown() {
         super.tearDown()
+        timer?.delegate = nil
         timer?.cancel()
         timer = nil
     }
@@ -193,5 +194,173 @@ final class PomodoroTimerTests: XCTestCase {
         timer.cancel()
         
         XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
+    }
+    
+    // MARK: - Delegate
+    func test_startFocusSession_notifiesStartFocusSession() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didStartSession = { timer, session in
+            XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(session, .Focus)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.startFocus()
+        
+        wait(for: [exp], timeout: 1)
+    }
+    
+    func test_startShortSession_notifiesStartShortSession() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didStartSession = { timer, session in
+            XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(session, .ShortBreak)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.startShortBreak()
+        
+        wait(for: [exp], timeout: 1)
+    }
+    
+    func test_startLongSession_notifiesStartLongSession() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didStartSession = { timer, session in
+            XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(session, .LongBreak)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.startLongBreak()
+        
+        wait(for: [exp], timeout: 1)
+    }
+    
+    func test_pauses_notifiesPause() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didPauseSession = { timer, session in
+            XCTAssertFalse(timer.isActive)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.startFocus()
+        timer.pause()
+        
+        wait(for: [exp], timeout: 1)
+    }
+    
+    func test_resume_notifiesResume() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didResumeSession = { timer, session in
+            XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(session, .Focus)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.startFocus()
+        timer.pause()
+        timer.resume()
+        
+        wait(for: [exp], timeout: 1)
+    }
+    
+    func test_cancel_notifiesCancel() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didCancel = { timer in
+            XCTAssertFalse(timer.isActive)
+            XCTAssertEqual(timer.session, .Idle)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.startFocus()
+        timer.cancel()
+        
+        wait(for: [exp], timeout: 1)
+    }
+    
+    func test_start_notifiesTick() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didTick = { timer, seconds in
+            XCTAssertTrue(timer.isActive)
+            XCTAssertLessThan(seconds, self._defaultFocusMinutes*self._secondsPerMinute)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.startFocus()
+        
+        wait(for: [exp], timeout: 2)
+    }
+    
+    func test_start_notifiesEnd() {
+        
+        let exp = expectation(description: "Notifies")
+        
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didEndSession = { timer, session in
+            XCTAssertFalse(timer.isActive)
+            XCTAssertEqual(timer.secondsRemaining, 0)
+            XCTAssertEqual(timer.session, .Focus)
+            exp.fulfill()
+        }
+        timer = PomodoroTimer(focus: 1, short: 1, long: 1)
+        timer.delegate = delegate
+        timer.startFocus()
+        
+        wait(for: [exp], timeout: 62)
+    }
+    
+    class PomodoroTimerMockDelegate: PomodoroTimerDelegate {
+        
+        var didStartSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
+        var didPauseSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
+        var didResumeSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
+        var didEndSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
+        var didTick: (( PomodoroTimer, Int ) -> Void)?
+        var didCancel: (( PomodoroTimer ) -> Void)?
+        
+        func pomodoroTimer(_ timer: PomodoroTimer, didStartSession session: PomodoroTimer.SessionType) {
+            didStartSession?(timer, session)
+        }
+        
+        func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Int) {
+            didTick?(timer, timer.secondsRemaining)
+        }
+        
+        func pomodoroTimer(_ timer: PomodoroTimer, didPauseSession session: PomodoroTimer.SessionType) {
+            didPauseSession?(timer, session)
+        }
+        
+        func pomodoroTimer(_ timer: PomodoroTimer, didResumeSession session: PomodoroTimer.SessionType) {
+            didResumeSession?(timer, session)
+        }
+        
+        func pomodoroTimer(_ timer: PomodoroTimer, didEndSession session: PomodoroTimer.SessionType) {
+            didEndSession?(timer, session)
+        }
+        
+        func pomodoroTimerDidCancel(_ timer: PomodoroTimer) {
+            didCancel?(timer)
+        }
     }
 }
