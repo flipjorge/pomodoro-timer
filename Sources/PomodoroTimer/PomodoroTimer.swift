@@ -76,4 +76,10 @@ public class PomodoroTimer {
         timer.start(_focusDuration*60)
     }
     
+    // MARK: - Pause
+    public func pause() {
+        guard let timer = _timer else { return }
+        
+        timer.pause()
+    }
 }
