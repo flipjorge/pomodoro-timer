@@ -48,17 +48,49 @@ final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Init
     func test_init_givenNoArgs_setDefaultProperties() {
-        XCTAssertEqual(timer.focusDuration, _defaultFocusMinutes)
-        XCTAssertEqual(timer.shortBreakDuration, _defaultShortBreakMinutes)
-        XCTAssertEqual(timer.longBreakDuration, _defaultLongBreakMinutes)
+        XCTAssertEqual(timer.focusDuration, _defaultFocusMinutes*_secondsPerMinute)
+        XCTAssertEqual(timer.shortBreakDuration, _defaultShortBreakMinutes*_secondsPerMinute)
+        XCTAssertEqual(timer.longBreakDuration, _defaultLongBreakMinutes*_secondsPerMinute)
+        
+        XCTAssertEqual(timer.focusMinutesDuration, _defaultFocusMinutes)
+        XCTAssertEqual(timer.shortBreakMinutesDuration, _defaultShortBreakMinutes)
+        XCTAssertEqual(timer.longBreakMinutesDuration, _defaultLongBreakMinutes)
     }
     
-    func test_init_givenValidArgs_initializesWithCorrectValues() {
-        timer = PomodoroTimer(focus: 40, short: 10, long: 25)
+    func test_init_givenValidArgsInSeconds_initializesWithCorrectValues() {
+        timer = PomodoroTimer(focus: _defaultFocusMinutes*_secondsPerMinute, short: _defaultShortBreakMinutes*_secondsPerMinute, long: _defaultLongBreakMinutes*_secondsPerMinute)
         
-        XCTAssertEqual(timer.focusDuration, 40)
-        XCTAssertEqual(timer.shortBreakDuration, 10)
-        XCTAssertEqual(timer.longBreakDuration, 25)
+        XCTAssertEqual(timer.focusDuration, _defaultFocusMinutes*_secondsPerMinute)
+        XCTAssertEqual(timer.shortBreakDuration, _defaultShortBreakMinutes*_secondsPerMinute)
+        XCTAssertEqual(timer.longBreakDuration, _defaultLongBreakMinutes*_secondsPerMinute)
+        
+        XCTAssertEqual(timer.focusMinutesDuration, _defaultFocusMinutes)
+        XCTAssertEqual(timer.shortBreakMinutesDuration, _defaultShortBreakMinutes)
+        XCTAssertEqual(timer.longBreakMinutesDuration, _defaultLongBreakMinutes)
+    }
+    
+    func test_init_given90Seconds_minutePropertiesCeilRoundsTo1Minute() {
+        timer = PomodoroTimer(focus: 90, short: 90, long: 90)
+        
+        XCTAssertEqual(timer.focusDuration, 90)
+        XCTAssertEqual(timer.shortBreakDuration, 90)
+        XCTAssertEqual(timer.longBreakDuration, 90)
+        
+        XCTAssertEqual(timer.focusMinutesDuration, 1)
+        XCTAssertEqual(timer.shortBreakMinutesDuration, 1)
+        XCTAssertEqual(timer.longBreakMinutesDuration, 1)
+    }
+    
+    func test_init_givenValidArgsInMinutes_initializesWithCorrectValues() {
+        timer = PomodoroTimer(focusMinutes: 40, shortMinutes: 10, longMinutes: 25)
+        
+        XCTAssertEqual(timer.focusDuration, 40*_secondsPerMinute)
+        XCTAssertEqual(timer.shortBreakDuration, 10*_secondsPerMinute)
+        XCTAssertEqual(timer.longBreakDuration, 25*_secondsPerMinute)
+        
+        XCTAssertEqual(timer.focusMinutesDuration, 40)
+        XCTAssertEqual(timer.shortBreakMinutesDuration, 10)
+        XCTAssertEqual(timer.longBreakMinutesDuration, 25)
     }
     
     func test_init_givenInvalidArgs_failsInit() {
@@ -323,11 +355,11 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertEqual(timer.session, .Focus)
             exp.fulfill()
         }
-        timer = PomodoroTimer(focus: 1, short: 1, long: 1)
+        timer = PomodoroTimer(focus: 3, short: 2, long: 2)
         timer.delegate = delegate
         timer.startFocus()
         
-        wait(for: [exp], timeout: 62)
+        wait(for: [exp], timeout: 5)
     }
     
     class PomodoroTimerMockDelegate: PomodoroTimerDelegate {

@@ -42,31 +42,54 @@ public class PomodoroTimer {
         _longBreakDuration = long
     }
     
+    public convenience init?(focusMinutes: Int, shortMinutes: Int, longMinutes: Int) {
+        guard focusMinutes > 0, shortMinutes > 0, longMinutes > 0 else {
+            return nil
+        }
+        
+        self.init()
+        
+        _focusDuration = focusMinutes*60
+        _shortBreakDuration = shortMinutes*60
+        _longBreakDuration = longMinutes*60
+    }
+    
     // MARK: - Delegate
     public var delegate: PomodoroTimerDelegate?
     
     // MARK: - Properties
-    private var _focusDuration: Int = 25
+    private var _focusDuration: Int = 25*60
     
     public var focusDuration: Int {
         return _focusDuration
     }
     
-    public var _shortBreakDuration: Int = 5
+    public var focusMinutesDuration: Int {
+        return _focusDuration/60
+    }
+    
+    public var _shortBreakDuration: Int = 5*60
     
     public var shortBreakDuration: Int {
         return _shortBreakDuration
     }
     
-    private var _longBreakDuration: Int = 15
+    public var shortBreakMinutesDuration: Int {
+        return _shortBreakDuration/60
+    }
+    
+    private var _longBreakDuration: Int = 15*60
     
     public var longBreakDuration: Int {
         return _longBreakDuration
     }
     
+    public var longBreakMinutesDuration: Int {
+        return _longBreakDuration/60
+    }
+    
     // MARK: - Timer
     private var _timer: STimer
-    private let _secondsPerMinute = 60
     
     public var isActive: Bool {
         return _timer.isActive
@@ -89,7 +112,7 @@ public class PomodoroTimer {
     
     // MARK: - Start Focus
     public func startFocus() {
-        _timer.start(_focusDuration*_secondsPerMinute)
+        _timer.start(_focusDuration)
         _session = .Focus
         
         delegate?.pomodoroTimer(self, didStartSession: _session)
@@ -97,14 +120,14 @@ public class PomodoroTimer {
     
     // MARK: - Start Break
     public func startShortBreak() {
-        _timer.start(_shortBreakDuration*_secondsPerMinute)
+        _timer.start(_shortBreakDuration)
         _session = .ShortBreak
         
         delegate?.pomodoroTimer(self, didStartSession: _session)
     }
     
     public func startLongBreak() {
-        _timer.start(_longBreakDuration*_secondsPerMinute)
+        _timer.start(_longBreakDuration)
         _session = .LongBreak
         
         delegate?.pomodoroTimer(self, didStartSession: _session)
