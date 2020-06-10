@@ -95,4 +95,9 @@ public class PomodoroTimer {
     public func resume() {
         _timer.resume()
     }
+    
+    // MARK: - Cancel
+    public func cancel() {
+        _timer.stop()
+    }
 }

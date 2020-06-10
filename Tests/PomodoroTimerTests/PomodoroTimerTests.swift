@@ -163,4 +163,20 @@ final class PomodoroTimerTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    // MARK: - Cancel
+    func test_cancel_stopsRunningAndResetsTime() {
+        timer = PomodoroTimer()
+        timer.startFocus()
+        timer.cancel()
+        
+        let exp = expectation(description:"Time counts")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if(result == XCTWaiter.Result.timedOut) {
+            XCTAssertFalse(timer.isActive)
+            XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        } else {
+            XCTFail()
+        }
+    }
 }
