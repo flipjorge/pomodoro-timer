@@ -83,6 +83,37 @@ final class PomodoroTimerTests: XCTestCase {
         }
     }
     
+    // MARK: - Break
+    func test_startShortBreak_startsCounting() {
+        timer = PomodoroTimer()
+        timer.startShortBreak()
+        
+        let exp = expectation(description:"Time counts")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if(result == XCTWaiter.Result.timedOut) {
+            XCTAssertTrue(timer.isActive)
+            XCTAssertLessThan(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute)
+            XCTAssertGreaterThan(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute - 5)
+        } else {
+            XCTFail()
+        }
+    }
+    
+    func test_startLongBreak_startsCounting() {
+        timer = PomodoroTimer()
+        timer.startLongBreak()
+        
+        let exp = expectation(description:"Time counts")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if(result == XCTWaiter.Result.timedOut) {
+            XCTAssertTrue(timer.isActive)
+            XCTAssertLessThan(timer.secondsRemaining, _defaultLongBreakMinutes*_secondsPerMinute)
+            XCTAssertGreaterThan(timer.secondsRemaining, _defaultLongBreakMinutes*_secondsPerMinute - 5)
+        } else {
+            XCTFail()
+        }
+    }
+    
     // MARK: - Pause
     func test_pause_stopsCounting() {
         timer = PomodoroTimer()

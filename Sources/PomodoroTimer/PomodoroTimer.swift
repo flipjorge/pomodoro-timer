@@ -77,6 +77,15 @@ public class PomodoroTimer {
         _timer.start(_focusDuration*_secondsPerMinute)
     }
     
+    // MARK: - Start Break
+    public func startShortBreak() {
+        _timer.start(_shortBreakDuration*_secondsPerMinute)
+    }
+    
+    public func startLongBreak() {
+        _timer.start(_longBreakDuration*_secondsPerMinute)
+    }
+    
     // MARK: - Pause
     public func pause() {
         _timer.pause()
