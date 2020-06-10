@@ -41,6 +41,7 @@ final class PomodoroTimerTests: XCTestCase {
     
     override func tearDown() {
         super.tearDown()
+        timer.cancel()
         timer = nil
     }
     
