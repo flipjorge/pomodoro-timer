@@ -92,4 +92,22 @@ final class PomodoroTimerTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    // MARK: - Resume
+    func test_resume_resumesCounting() {
+        timer = PomodoroTimer()
+        timer.startFocus()
+        timer.pause()
+        timer.resume()
+        
+        let exp = expectation(description:"Time counts")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if(result == XCTWaiter.Result.timedOut) {
+            XCTAssertTrue(timer.isActive)
+            XCTAssertLessThan(timer.secondsRemaining, 25*60)
+            XCTAssertGreaterThan(timer.secondsRemaining, 0)
+        } else {
+            XCTFail()
+        }
+    }
 }
