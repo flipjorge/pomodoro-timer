@@ -62,6 +62,7 @@ public class PomodoroTimer {
     
     // MARK: - Timer
     private var _timer: STimer
+    private let _secondsPerMinute = 60
     
     public var isActive: Bool {
         return _timer.isActive
@@ -73,7 +74,7 @@ public class PomodoroTimer {
     
     // MARK: - Start Focus
     public func startFocus() {
-        _timer.start(_focusDuration*60)
+        _timer.start(_focusDuration*_secondsPerMinute)
     }
     
     // MARK: - Pause
