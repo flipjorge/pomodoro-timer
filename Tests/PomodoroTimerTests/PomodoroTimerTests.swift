@@ -24,10 +24,42 @@ import XCTest
 @testable import PomodoroTimer
 
 final class PomodoroTimerTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(PomodoroTimer().text, "Hello, World!")
+    
+    // MARK: - Setup
+    var timer: PomodoroTimer!
+    
+    override func setUp() {
+        super.setUp()
+        
     }
+    
+    override func tearDown() {
+        super.tearDown()
+        timer = nil
+    }
+    
+    // MARK: - Init
+    func test_init_givenNoArgs_setDefaultProperties() {
+        timer = PomodoroTimer()
+        
+        XCTAssertEqual(timer.focusDuration, 25)
+        XCTAssertEqual(timer.shortBreakDuration, 5)
+        XCTAssertEqual(timer.longBreakDuration, 15)
+    }
+    
+    func test_init_givenValidArgs_initializesWithCorrectValues() {
+        timer = PomodoroTimer(focus: 40, short: 10, long: 25)
+        
+        XCTAssertEqual(timer.focusDuration, 40)
+        XCTAssertEqual(timer.shortBreakDuration, 10)
+        XCTAssertEqual(timer.longBreakDuration, 25)
+    }
+    
+    func test_init_givenInvalidArgs_failsInit() {
+        timer = PomodoroTimer(focus: -10, short: 5, long: 15)
+        
+        XCTAssertNil(timer)
+    }
+    
+    
 }
