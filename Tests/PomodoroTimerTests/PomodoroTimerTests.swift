@@ -36,19 +36,17 @@ final class PomodoroTimerTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        
+        timer = PomodoroTimer()
     }
     
     override func tearDown() {
         super.tearDown()
-        timer.cancel()
+        timer?.cancel()
         timer = nil
     }
     
     // MARK: - Init
     func test_init_givenNoArgs_setDefaultProperties() {
-        timer = PomodoroTimer()
-        
         XCTAssertEqual(timer.focusDuration, _defaultFocusMinutes)
         XCTAssertEqual(timer.shortBreakDuration, _defaultShortBreakMinutes)
         XCTAssertEqual(timer.longBreakDuration, _defaultLongBreakMinutes)
@@ -70,7 +68,6 @@ final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Start Focus
     func test_start_startsCounting() {
-        timer = PomodoroTimer()
         timer.startFocus()
         
         let exp = expectation(description:"Time counts")
@@ -86,7 +83,6 @@ final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Break
     func test_startShortBreak_startsCounting() {
-        timer = PomodoroTimer()
         timer.startShortBreak()
         
         let exp = expectation(description:"Time counts")
@@ -101,7 +97,6 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_startLongBreak_startsCounting() {
-        timer = PomodoroTimer()
         timer.startLongBreak()
         
         let exp = expectation(description:"Time counts")
@@ -116,7 +111,6 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_startShortBreakWhileFocusSessionIsRunning_startsCountingBreak() {
-        timer = PomodoroTimer()
         timer.startFocus()
         timer.startShortBreak()
         
@@ -133,7 +127,6 @@ final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Pause
     func test_pause_stopsCounting() {
-        timer = PomodoroTimer()
         timer.startFocus()
         timer.pause()
         
@@ -149,7 +142,6 @@ final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Resume
     func test_resume_resumesCounting() {
-        timer = PomodoroTimer()
         timer.startFocus()
         timer.pause()
         timer.resume()
@@ -167,7 +159,6 @@ final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Cancel
     func test_cancel_stopsRunningAndResetsTime() {
-        timer = PomodoroTimer()
         timer.startFocus()
         timer.cancel()
         
@@ -183,14 +174,10 @@ final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Session
     func test_session_initializesIdle() {
-        timer = PomodoroTimer()
-        
         XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
     }
     
     func test_session_startSession_setToRespectiveSessionType() {
-        timer = PomodoroTimer()
-        
         timer.startFocus()
         XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Focus)
         
@@ -202,7 +189,6 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_session_cancelSession_setToCancelType() {
-        timer = PomodoroTimer()
         timer.startFocus()
         timer.cancel()
         
