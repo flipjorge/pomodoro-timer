@@ -28,3 +28,12 @@ public protocol PomodoroTimerDelegate {
     func pomodoroTimerDidCancel(_ timer: PomodoroTimer)
     func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Int)
 }
+
+public extension PomodoroTimerDelegate {
+    func pomodoroTimer(_ timer: PomodoroTimer, didStartSession session: PomodoroTimer.SessionType) { }
+    func pomodoroTimer(_ timer: PomodoroTimer, didPauseSession session: PomodoroTimer.SessionType) { }
+    func pomodoroTimer(_ timer: PomodoroTimer, didResumeSession session: PomodoroTimer.SessionType) { }
+    func pomodoroTimer(_ timer: PomodoroTimer, didEndSession session:PomodoroTimer.SessionType) { }
+    func pomodoroTimerDidCancel(_ timer: PomodoroTimer) { }
+    func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Int) { }
+}
