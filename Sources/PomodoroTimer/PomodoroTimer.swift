@@ -72,18 +72,32 @@ public class PomodoroTimer {
         return _timer.secondsRemaining
     }
     
+    // MARK: - Session
+    public enum SessionType {
+        case Idle, Focus, ShortBreak, LongBreak
+    }
+    
+    private var _session: SessionType = .Idle
+    
+    public var session: SessionType {
+        return _session
+    }
+    
     // MARK: - Start Focus
     public func startFocus() {
         _timer.start(_focusDuration*_secondsPerMinute)
+        _session = .Focus
     }
     
     // MARK: - Start Break
     public func startShortBreak() {
         _timer.start(_shortBreakDuration*_secondsPerMinute)
+        _session = .ShortBreak
     }
     
     public func startLongBreak() {
         _timer.start(_longBreakDuration*_secondsPerMinute)
+        _session = .LongBreak
     }
     
     // MARK: - Pause
@@ -99,5 +113,6 @@ public class PomodoroTimer {
     // MARK: - Cancel
     public func cancel() {
         _timer.stop()
+        _session = .Idle
     }
 }
