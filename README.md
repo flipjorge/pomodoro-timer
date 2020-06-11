@@ -86,3 +86,14 @@ timer.longBreakMinutesDuration
 timer.secondsRemaining
 timer.session  // .Idle, .Focus, .ShortBreak, .LongBreak
 ```
+
+### Protocol Methods
+
+```swift
+func pomodoroTimer(_ timer: PomodoroTimer, didStartSession session: PomodoroTimer.SessionType)
+func pomodoroTimer(_ timer: PomodoroTimer, didPauseSession session: PomodoroTimer.SessionType)
+func pomodoroTimer(_ timer: PomodoroTimer, didResumeSession session: PomodoroTimer.SessionType)
+func pomodoroTimer(_ timer: PomodoroTimer, didEndSession session:PomodoroTimer.SessionType)
+func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Int)
+func pomodoroTimerDidCancel(_ timer: PomodoroTimer)
+```
