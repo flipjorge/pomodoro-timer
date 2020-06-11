@@ -96,6 +96,7 @@ public class PomodoroTimer {
     }
     
     public var secondsRemaining: Int {
+        if session == .Idle { return focusDuration }
         return _timer.secondsRemaining
     }
     
@@ -112,7 +113,6 @@ public class PomodoroTimer {
     
     // MARK: - Start Session
     public func startSession(session: SessionType) {
-        
         let seconds: Int
         
         switch session {
@@ -123,13 +123,20 @@ public class PomodoroTimer {
         case .LongBreak:
             seconds = _longBreakDuration
         default:
-            seconds = 0
+            cancel()
+            return
         }
         
         startSession(seconds:seconds, session:session)
     }
     
     public func startSession(seconds: Int, session: SessionType) {
+        
+        guard session != .Idle else {
+            cancel()
+            return
+        }
+        
         _timer.start(seconds)
         _session = session
         delegate?.pomodoroTimer(self, didStartSession: _session)
@@ -179,6 +186,7 @@ public class PomodoroTimer {
     public func cancel() {
         _timer.stop()
         _session = .Idle
+        
         
         delegate?.pomodoroTimerDidCancel(self)
     }
