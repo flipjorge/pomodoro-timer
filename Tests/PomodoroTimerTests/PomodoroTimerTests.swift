@@ -99,8 +99,33 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertNil(timer)
     }
     
+    // MARK: - Start Session
+    func test_startSession_givenSession_startCountingWithGivenSession() {
+        timer.startSession(session: .Focus)
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .Focus)
+        XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        
+        timer.startSession(session: .ShortBreak)
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .ShortBreak)
+        XCTAssertEqual(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute)
+        
+        timer.startSession(session: .LongBreak)
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .LongBreak)
+        XCTAssertEqual(timer.secondsRemaining, _defaultLongBreakMinutes*_secondsPerMinute)
+    }
+    
+    func test_startSession_givenFocusSessionAndSeconds_startCountingWithFocusSession() {
+        timer.startSession(seconds: 93, session: .Focus)
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .Focus)
+        XCTAssertEqual(timer.secondsRemaining, 93)
+    }
+    
     // MARK: - Start Focus
-    func test_start_startsCounting() {
+    func test_startFocus_startsCounting() {
         timer.startFocus()
         
         let exp = expectation(description:"Time counts")
@@ -108,6 +133,20 @@ final class PomodoroTimerTests: XCTestCase {
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertTrue(timer.isActive)
             XCTAssertLessThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+            XCTAssertGreaterThan(timer.secondsRemaining, 0)
+        } else {
+            XCTFail()
+        }
+    }
+    
+    func test_startFocus_givenSeconds_startCountingFromGivenSeconds() {
+        timer.startFocus(seconds:93)
+        
+        let exp = expectation(description: "Timer counts")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if(result == XCTWaiter.Result.timedOut) {
+            XCTAssertTrue(timer.isActive)
+            XCTAssertLessThan(timer.secondsRemaining, 93)
             XCTAssertGreaterThan(timer.secondsRemaining, 0)
         } else {
             XCTFail()

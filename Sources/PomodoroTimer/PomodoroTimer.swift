@@ -110,27 +110,55 @@ public class PomodoroTimer {
         return _session
     }
     
+    // MARK: - Start Session
+    public func startSession(session: SessionType) {
+        
+        let seconds: Int
+        
+        switch session {
+        case .Focus:
+            seconds = _focusDuration
+        case .ShortBreak:
+            seconds = _shortBreakDuration
+        case .LongBreak:
+            seconds = _longBreakDuration
+        default:
+            seconds = 0
+        }
+        
+        startSession(seconds:seconds, session:session)
+    }
+    
+    public func startSession(seconds: Int, session: SessionType) {
+        _timer.start(seconds)
+        _session = session
+        delegate?.pomodoroTimer(self, didStartSession: _session)
+    }
+    
     // MARK: - Start Focus
     public func startFocus() {
-        _timer.start(_focusDuration)
-        _session = .Focus
-        
-        delegate?.pomodoroTimer(self, didStartSession: _session)
+        startSession(seconds: _focusDuration, session: .Focus)
+    }
+    
+    public func startFocus(seconds: Int) {
+        startSession(seconds: seconds, session: .Focus)
     }
     
     // MARK: - Start Break
     public func startShortBreak() {
-        _timer.start(_shortBreakDuration)
-        _session = .ShortBreak
-        
-        delegate?.pomodoroTimer(self, didStartSession: _session)
+        startSession(seconds: _shortBreakDuration, session: .ShortBreak)
+    }
+    
+    public func startShortBreak(seconds: Int) {
+        startSession(seconds: seconds, session: .ShortBreak)
     }
     
     public func startLongBreak() {
-        _timer.start(_longBreakDuration)
-        _session = .LongBreak
-        
-        delegate?.pomodoroTimer(self, didStartSession: _session)
+        startSession(seconds: _longBreakDuration, session: .LongBreak)
+    }
+    
+    public func startLongBreak(seconds: Int) {
+        startSession(seconds: seconds, session: .LongBreak)
     }
     
     // MARK: - Pause
