@@ -55,6 +55,9 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.focusMinutesDuration, _defaultFocusMinutes)
         XCTAssertEqual(timer.shortBreakMinutesDuration, _defaultShortBreakMinutes)
         XCTAssertEqual(timer.longBreakMinutesDuration, _defaultLongBreakMinutes)
+        
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
+        XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
     }
     
     func test_init_givenValidArgsInSeconds_initializesWithCorrectValues() {
@@ -67,6 +70,9 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.focusMinutesDuration, _defaultFocusMinutes)
         XCTAssertEqual(timer.shortBreakMinutesDuration, _defaultShortBreakMinutes)
         XCTAssertEqual(timer.longBreakMinutesDuration, _defaultLongBreakMinutes)
+        
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
+        XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
     }
     
     func test_init_given90Seconds_minutePropertiesCeilRoundsTo1Minute() {
@@ -91,6 +97,9 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.focusMinutesDuration, 40)
         XCTAssertEqual(timer.shortBreakMinutesDuration, 10)
         XCTAssertEqual(timer.longBreakMinutesDuration, 25)
+        
+        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
+        XCTAssertEqual(timer.secondsRemaining, 40*_secondsPerMinute)
     }
     
     func test_init_givenInvalidArgs_failsInit() {
@@ -99,7 +108,41 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertNil(timer)
     }
     
+    func test_init_givenInvalidArgsInMinutes_failsInit() {
+        timer = PomodoroTimer(focusMinutes: -10, shortMinutes: _defaultShortBreakMinutes, longMinutes: _defaultShortBreakMinutes)
+        
+        XCTAssertNil(timer)
+    }
+    
     // MARK: - Start Session
+    func test_startSession_givenIdleSession_keepsInactive() {
+        timer.startSession(session: .Idle)
+        XCTAssertFalse(timer.isActive)
+        XCTAssertEqual(timer.session, .Idle)
+    }
+    
+    func test_startSession_givenIdleSession_setSecondsToFocusDuration() {
+        timer.startSession(session: .Idle)
+        XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+    }
+    
+    func test_startSession_givenIdleSessionAfterStartedFocusSession_cancel() {
+        timer.startFocus()
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .Focus)
+        
+        timer.startSession(session: .Idle)
+        XCTAssertFalse(timer.isActive)
+        XCTAssertEqual(timer.session, .Idle)
+    }
+    
+    func test_startSession_givenIdleSessionWithSeconds_ignoresSecondsAndUsesFocusDuration() {
+        timer.startSession(seconds: 6, session: .Idle)
+        XCTAssertFalse(timer.isActive)
+        XCTAssertEqual(timer.session, .Idle)
+        XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+    }
+    
     func test_startSession_givenSession_startCountingWithGivenSession() {
         timer.startSession(session: .Focus)
         XCTAssertTrue(timer.isActive)
@@ -117,59 +160,99 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.secondsRemaining, _defaultLongBreakMinutes*_secondsPerMinute)
     }
     
-    func test_startSession_givenFocusSessionAndSeconds_startCountingWithFocusSession() {
+    func test_startSession_givenSessionAndSeconds_startCountingWithGivenSessionAndSeconds() {
         timer.startSession(seconds: 93, session: .Focus)
         XCTAssertTrue(timer.isActive)
         XCTAssertEqual(timer.session, .Focus)
         XCTAssertEqual(timer.secondsRemaining, 93)
+        
+        timer.startSession(seconds: 61, session: .ShortBreak)
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .ShortBreak)
+        XCTAssertEqual(timer.secondsRemaining, 61)
+        
+        timer.startSession(seconds: 99, session: .LongBreak)
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .LongBreak)
+        XCTAssertEqual(timer.secondsRemaining, 99)
     }
     
     // MARK: - Start Focus
-    func test_startFocus_startsCounting() {
+    func test_startFocus_startsAndKeepsCounting() {
         timer.startFocus()
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .Focus)
+        XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
         
         let exp = expectation(description:"Time counts")
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(timer.session, .Focus)
             XCTAssertLessThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, 0)
-        } else {
-            XCTFail()
         }
     }
     
-    func test_startFocus_givenSeconds_startCountingFromGivenSeconds() {
+    func test_startFocus_givenSeconds_startsAndKeepsCounting() {
         timer.startFocus(seconds:93)
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .Focus)
+        XCTAssertEqual(timer.secondsRemaining, 93)
         
         let exp = expectation(description: "Timer counts")
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(timer.session, .Focus)
             XCTAssertLessThan(timer.secondsRemaining, 93)
             XCTAssertGreaterThan(timer.secondsRemaining, 0)
-        } else {
-            XCTFail()
         }
     }
     
     // MARK: - Break
-    func test_startShortBreak_startsCounting() {
+    func test_startShortBreak_startsAndKeepsCounting() {
         timer.startShortBreak()
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .ShortBreak)
+        XCTAssertEqual(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute)
         
         let exp = expectation(description:"Time counts")
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(timer.session, .ShortBreak)
             XCTAssertLessThan(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute - 5)
-        } else {
-            XCTFail()
         }
     }
     
-    func test_startLongBreak_startsCounting() {
+    func test_startShortBreak_givenSeconds_startsAndKeepsCounting() {
+        timer.startShortBreak(seconds: 46)
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.secondsRemaining, 46)
+        XCTAssertEqual(timer.session, .ShortBreak)
+        
+        let exp = expectation(description:"Time counts")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if(result == XCTWaiter.Result.timedOut) {
+            XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(timer.session, .ShortBreak)
+            XCTAssertLessThan(timer.secondsRemaining, 46)
+            XCTAssertGreaterThan(timer.secondsRemaining, 0)
+        }
+    }
+    
+    func test_startLongBreak_startsAndKeepsCounting() {
         timer.startLongBreak()
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .LongBreak)
+        XCTAssertEqual(timer.secondsRemaining, _defaultLongBreakMinutes*_secondsPerMinute)
         
         let exp = expectation(description:"Time counts")
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
@@ -177,8 +260,23 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertTrue(timer.isActive)
             XCTAssertLessThan(timer.secondsRemaining, _defaultLongBreakMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, _defaultLongBreakMinutes*_secondsPerMinute - 5)
-        } else {
-            XCTFail()
+        }
+    }
+    
+    func test_startLongBreak_givenSeconds_startsAndKeepsCounting() {
+        timer.startLongBreak(seconds: 149)
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.secondsRemaining, 149)
+        XCTAssertEqual(timer.session, .LongBreak)
+        
+        let exp = expectation(description:"Time counts")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if(result == XCTWaiter.Result.timedOut) {
+            XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(timer.session, .LongBreak)
+            XCTAssertLessThan(timer.secondsRemaining, 149)
+            XCTAssertGreaterThan(timer.secondsRemaining, 0)
         }
     }
     
@@ -192,8 +290,6 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertTrue(timer.isActive)
             XCTAssertLessThan(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute - 5)
-        } else {
-            XCTFail()
         }
     }
     
@@ -207,8 +303,6 @@ final class PomodoroTimerTests: XCTestCase {
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertFalse(timer.isActive)
             XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
-        } else {
-            XCTFail()
         }
     }
     
@@ -224,8 +318,6 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertTrue(timer.isActive)
             XCTAssertLessThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, 0)
-        } else {
-            XCTFail()
         }
     }
     
@@ -234,37 +326,17 @@ final class PomodoroTimerTests: XCTestCase {
         timer.startFocus()
         timer.cancel()
         
+        XCTAssertFalse(timer.isActive)
+        XCTAssertEqual(timer.session, .Idle)
+        XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        
         let exp = expectation(description:"Time counts")
         let result = XCTWaiter.wait(for: [exp], timeout: 2)
         if(result == XCTWaiter.Result.timedOut) {
             XCTAssertFalse(timer.isActive)
+            XCTAssertEqual(timer.session, .Idle)
             XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
-        } else {
-            XCTFail()
         }
-    }
-    
-    // MARK: - Session
-    func test_session_initializesIdle() {
-        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
-    }
-    
-    func test_session_startSession_setToRespectiveSessionType() {
-        timer.startFocus()
-        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Focus)
-        
-        timer.startShortBreak()
-        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.ShortBreak)
-        
-        timer.startLongBreak()
-        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.LongBreak)
-    }
-    
-    func test_session_cancelSession_setToCancelType() {
-        timer.startFocus()
-        timer.cancel()
-        
-        XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
     }
     
     // MARK: - Delegate
