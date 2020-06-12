@@ -123,8 +123,7 @@ public class PomodoroTimer {
         case .LongBreak:
             seconds = _longBreakDuration
         default:
-            cancel()
-            return
+            seconds = 0
         }
         
         startSession(seconds:seconds, session:session)
@@ -132,12 +131,12 @@ public class PomodoroTimer {
     
     public func startSession(seconds: Int, session: SessionType) {
         
-        guard session != .Idle else {
-            cancel()
-            return
+        if session != .Idle {
+            _timer.start(seconds)
+        } else {
+            _timer.stop()
         }
         
-        _timer.start(seconds)
         _session = session
         delegate?.pomodoroTimer(self, didStartSession: _session)
     }
@@ -186,7 +185,6 @@ public class PomodoroTimer {
     public func cancel() {
         _timer.stop()
         _session = .Idle
-        
         
         delegate?.pomodoroTimerDidCancel(self)
     }
