@@ -101,7 +101,7 @@ public class PomodoroTimer {
     }
     
     // MARK: - Session
-    public enum SessionType {
+    public enum SessionType: Int {
         case Idle, Focus, ShortBreak, LongBreak
     }
     
