@@ -605,4 +605,60 @@ final class PomodoroTimerTests: XCTestCase {
         
         XCTAssertEqual(timer.streaksCount, 0)
     }
+    
+    // MARK: - Get End Time
+    func test_getEndTime_onIdle_returnsNil() {
+        let endTime = timer.getCurrentSessionEndTime()
+        
+        XCTAssertNil(endTime)
+    }
+    
+    func test_getEndTime_onFocus_returnsEndTime() {
+        timer.startFocus()
+        let endTime = timer.getCurrentSessionEndTime()
+        
+        XCTAssertEqual(endTime?.timeIntervalSinceNow.rounded(), 25*60)
+    }
+    
+    func test_getEndTime_onFocusCustomSeconds_returnsEndTime() {
+        timer.startFocus(seconds: 44)
+        let endTime = timer.getCurrentSessionEndTime()
+        
+        XCTAssertEqual(endTime?.timeIntervalSinceNow.rounded(), 44)
+    }
+    
+    func test_getEndTime_onBreak_returnsEndTime() {
+        timer.startShortBreak(seconds: 56)
+        let endTime = timer.getCurrentSessionEndTime()
+        
+        XCTAssertEqual(endTime?.timeIntervalSinceNow.rounded(), 56)
+    }
+    
+    func test_getEndTime_onPause_returnNil() {
+        timer.startFocus()
+        timer.pause()
+        let endTime = timer.getCurrentSessionEndTime()
+        
+        XCTAssertNil(endTime?.timeIntervalSinceNow.rounded())
+    }
+    
+    func test_getBreakEndTime_onIdle_returnsNil() {
+        let endTime = timer.getBreakEndTime()
+        
+        XCTAssertNil(endTime?.timeIntervalSinceNow.rounded())
+    }
+    
+    func test_getBreakEndTime_onFocus_returnsEndTime() {
+        timer.startFocus()
+        let endTime = timer.getBreakEndTime()
+        
+        XCTAssertEqual(endTime?.timeIntervalSinceNow.rounded(), (25+5)*60)
+    }
+    
+    func test_getBreakEndTime_onBreak_returnEndTimer() {
+        timer.startShortBreak()
+        let endTime = timer.getBreakEndTime()
+        
+        XCTAssertEqual(endTime?.timeIntervalSinceNow.rounded(), 5*60)
+    }
 }

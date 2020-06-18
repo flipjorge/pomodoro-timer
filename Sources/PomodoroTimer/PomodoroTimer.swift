@@ -20,6 +20,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
+import Foundation
 import SecondsTimer
 
 public class PomodoroTimer {
@@ -232,5 +233,27 @@ public extension PomodoroTimer {
     
     func resetStreaks() {
         _streaks = 0
+    }
+}
+
+// MARK: - Get End Time
+public extension PomodoroTimer {
+    
+    func getCurrentSessionEndTime() -> Date? {
+        guard _session != .Idle, isActive else { return nil }
+        return Date(timeIntervalSinceNow: TimeInterval(secondsRemaining))
+    }
+    
+    func getBreakEndTime() -> Date? {
+        guard _session != .Idle, isActive else { return nil }
+        
+        if _session == .ShortBreak || _session == .LongBreak {
+            return Date(timeIntervalSinceNow: TimeInterval(secondsRemaining))
+        }
+        
+        let nextBreakType = getNextBreakType()
+        let breakDuration = nextBreakType == .ShortBreak ? shortBreakDuration : longBreakDuration
+        
+        return Date(timeIntervalSinceNow: TimeInterval(secondsRemaining+breakDuration))
     }
 }
