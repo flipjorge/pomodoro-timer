@@ -57,6 +57,7 @@ public class PomodoroTimer {
     // MARK: - Delegate
     public var delegate: PomodoroTimerDelegate?
     
+    
     // MARK: - Properties
     private var _focusDuration: Int = 25*60
     
@@ -141,6 +142,10 @@ public class PomodoroTimer {
         delegate?.pomodoroTimer(self, didStartSession: _session)
     }
     
+    // MARK: - Streaks
+    private var _streaks: Int = 0
+    
+    
     // MARK: - Start Focus
     public func startFocus() {
         startSession(seconds: _focusDuration, session: .Focus)
@@ -198,6 +203,22 @@ extension PomodoroTimer: STimerDelegate {
     }
     
     public func clockDidEnd(_ clock: STimer) {
+        if _session == .Focus { _streaks += 1 }
+        else if _session == .LongBreak { resetStreaks() }
+        
         delegate?.pomodoroTimer(self, didEndSession: _session)
+    }
+}
+
+// MARK: - Streaks
+public extension PomodoroTimer {
+    
+    var streaksCount: Int {
+        get { _streaks }
+        set { _streaks = max(newValue, 0) }
+    }
+    
+    func resetStreaks() {
+        _streaks = 0
     }
 }

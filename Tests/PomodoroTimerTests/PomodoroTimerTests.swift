@@ -21,7 +21,7 @@
 //  SOFTWARE.
 
 import XCTest
-@testable import PomodoroTimer
+import PomodoroTimer
 
 final class PomodoroTimerTests: XCTestCase {
     
@@ -505,5 +505,62 @@ final class PomodoroTimerTests: XCTestCase {
         func pomodoroTimerDidCancel(_ timer: PomodoroTimer) {
             didCancel?(timer)
         }
+    }
+    
+    // MARK: - Streaks
+    func test_setStreaks_withPositiveValue_updatesStreaksValue() {
+        timer.streaksCount = 3
+        
+        XCTAssertEqual(timer.streaksCount, 3)
+    }
+    
+    func test_setStreaks_withNegativeValue_setZero() {
+        timer.streaksCount = -4
+        
+        XCTAssertEqual(timer.streaksCount, 0)
+    }
+    
+    func test_startFocus_shouldntIncreaseStreaks() {
+        timer.startFocus()
+        
+        XCTAssertEqual(timer.streaksCount, 0)
+    }
+    
+    func test_endFocus_shouldIncreaseStreaks() {
+        timer.startFocus(seconds: 2)
+        
+        let exp = expectation(description: "Increase Streaks")
+        let result = XCTWaiter.wait(for: [exp], timeout: 3)
+        if result == .timedOut {
+            XCTAssertGreaterThan(timer.streaksCount, 0)
+        }
+    }
+    
+    func test_endBreak_shouldntIncreaseStreaks() {
+        timer.startShortBreak(seconds: 2)
+        
+        let exp = expectation(description: "Shouldn't increase streaks")
+        let result = XCTWaiter.wait(for: [exp], timeout: 3)
+        if result == .timedOut {
+            XCTAssertEqual(timer.streaksCount, 0)
+        }
+    }
+    
+    func test_endLongBreak_resetsStreaks() {
+        timer.streaksCount = 4
+        timer.startLongBreak(seconds: 2)
+        
+        let exp = expectation(description: "Resets streaks")
+        let result = XCTWaiter.wait(for: [exp], timeout: 3)
+        if result == .timedOut {
+            XCTAssertEqual(timer.streaksCount, 0)
+        }
+    }
+    
+    func test_resetStreaks_setZero() {
+        timer.streaksCount = 3
+        timer.resetStreaks()
+        
+        XCTAssertEqual(timer.streaksCount, 0)
     }
 }
