@@ -293,6 +293,48 @@ final class PomodoroTimerTests: XCTestCase {
         }
     }
     
+    func test_getNextBreakOnIdle_returnsShortBreak() {
+        let sessionType = timer.getNextBreakType()
+        
+        XCTAssertEqual(sessionType, .ShortBreak)
+    }
+    
+    func test_getNextBreakOnFocusAndThreeStreaks_returnsShortBreak() {
+        timer.streaksCount = 3
+        timer.startFocus()
+        let sessionType = timer.getNextBreakType()
+        
+        XCTAssertEqual(sessionType, .ShortBreak)
+    }
+    
+    func test_getNextBreakOnFocusAndFourStreaks_returnsLongBreak() {
+        timer.streaksCount = 4
+        timer.startFocus()
+        let sessionType = timer.getNextBreakType()
+        
+        XCTAssertEqual(sessionType, .LongBreak)
+    }
+    
+    func test_startBreak_whenStreaksCountIsZero_startsShortBreak() {
+        timer.startBreak()
+        
+        XCTAssertEqual(timer.session, .ShortBreak)
+    }
+    
+    func test_startBreak_whenStreaksIsThree_startsShortBreak() {
+        timer.streaksCount = 3
+        timer.startBreak()
+        
+        XCTAssertEqual(timer.session, .ShortBreak)
+    }
+    
+    func test_startBreak_whenStreaksIsFour_startsLongBreak() {
+        timer.streaksCount = 4
+        timer.startBreak()
+        
+        XCTAssertEqual(timer.session, .LongBreak)
+    }
+    
     // MARK: - Pause
     func test_pause_stopsCounting() {
         timer.startFocus()

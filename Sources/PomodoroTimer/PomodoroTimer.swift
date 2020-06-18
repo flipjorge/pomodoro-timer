@@ -172,6 +172,18 @@ public class PomodoroTimer {
         startSession(seconds: seconds, session: .LongBreak)
     }
     
+    public func startBreak() {
+        if getNextBreakType() == .ShortBreak {
+            startShortBreak()
+        } else {
+            startLongBreak()
+        }
+    }
+    
+    public func getNextBreakType() -> SessionType {
+        return _streaks < 4 ? .ShortBreak : .LongBreak
+    }
+    
     // MARK: - Pause
     public func pause() {
         _timer.pause()
