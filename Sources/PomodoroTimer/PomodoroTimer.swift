@@ -27,9 +27,9 @@ import SecondsTimer
 public class PomodoroTimer {
     
     // MARK: - Init
-    public init() {
+    public init(settings: Settings = .init()) {
         _timer = STimer()
-        _settings = Settings()
+        _settings = settings
         _timer.delegate = self
     }
     

@@ -62,6 +62,13 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
     }
     
+    func test_initWithSettings_initsWithSettingsValues() {
+        let settings = PomodoroTimer.Settings()
+        timer = PomodoroTimer(settings: settings)
+        
+        XCTAssertEqual(timer.settings, settings)
+    }
+    
     func test_init_givenValidArgsInSeconds_initializesWithCorrectValues() {
         timer = PomodoroTimer(focus: _defaultFocusMinutes*_secondsPerMinute, short: _defaultShortBreakMinutes*_secondsPerMinute, long: _defaultLongBreakMinutes*_secondsPerMinute, streaks: _defaultStreaks)
         
@@ -595,9 +602,7 @@ final class PomodoroTimerTests: XCTestCase {
         timer.resumeSession(seconds: 45, session: .Idle)
         
         let result = XCTWaiter.wait(for: [exp], timeout: 1)
-        if result == .completed {
-            XCTFail("Shouldn't notifies resume")
-        }
+        XCTAssertEqual(result, .timedOut)
     }
     
     func test_changeSettings_notifiesChange() {
