@@ -217,6 +217,15 @@ public extension PomodoroTimer {
         delegate?.pomodoroTimer(self, didResumeSession: _session)
     }
     
+    func resumeSession(seconds: Int, session: SessionType) {
+        guard session != .Idle else { return }
+        
+        _timer.start(seconds)
+        _session = session
+        
+        delegate?.pomodoroTimer(self, didResumeSession: _session)
+    }
+    
     // MARK: - Cancel
     func cancel() {
         _timer.stop()

@@ -349,7 +349,7 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     // MARK: - Resume
-    func test_resume_resumesCounting() {
+    func test_resumeAfterPause_resumesCounting() {
         timer.startFocus()
         timer.pause()
         timer.resume()
@@ -361,6 +361,35 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertLessThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
             XCTAssertGreaterThan(timer.secondsRemaining, 0)
         }
+    }
+    
+    func test_resumeOnIdle_staysIdle() {
+        timer.resume()
+        
+        XCTAssertFalse(timer.isActive)
+    }
+    
+    func test_resumeWithIdleSession_doesNothing() {
+        timer.resumeSession(seconds: 45, session: .Idle)
+        
+        XCTAssertFalse(timer.isActive)
+    }
+    
+    func test_resumeWithFocusSession_resumesFocusSession() {
+        timer.resumeSession(seconds: 76, session: .Focus)
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .Focus)
+        XCTAssertEqual(timer.secondsRemaining, 76)
+    }
+    
+    func test_resumeBreakSessionWhileRunningFocusSessions_resumesBreakSession() {
+        timer.startFocus()
+        timer.resumeSession(seconds: 67, session: .ShortBreak)
+        
+        XCTAssertTrue(timer.isActive)
+        XCTAssertEqual(timer.session, .ShortBreak)
+        XCTAssertEqual(timer.secondsRemaining, 67)
     }
     
     // MARK: - Cancel
@@ -515,6 +544,39 @@ final class PomodoroTimerTests: XCTestCase {
         wait(for: [exp], timeout: 5)
     }
     
+    func test_resumeFocusSession_notifiesResume() {
+        
+        let exp = expectation(description: "Notifies")
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didResumeSession = { timer, session in
+            XCTAssertTrue(timer.isActive)
+            XCTAssertEqual(timer.session, .Focus)
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.resumeSession(seconds: 44, session: .Focus)
+        
+        wait(for: [exp], timeout: 2)
+    }
+    
+    func test_resumeIdleSession_doesntNotifies() {
+        
+        let exp = expectation(description: "Does not notifies")
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didResumeSession = { timer, session in
+            exp.fulfill()
+        }
+        timer.delegate = delegate
+        timer.resumeSession(seconds: 45, session: .Idle)
+        
+        let result = XCTWaiter.wait(for: [exp], timeout: 1)
+        if result == .completed {
+            XCTFail("Shouldn't notifies resume")
+        }
+    }
+    
+    
+    // MARK: - Mock Delegate
     class PomodoroTimerMockDelegate: PomodoroTimerDelegate {
         
         var didStartSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
