@@ -29,17 +29,15 @@ public class PomodoroTimer {
     // MARK: - Init
     public init() {
         _timer = STimer()
+        _settings = Settings()
         _timer.delegate = self
     }
     
     // MARK: - Properties
     private var _timer: STimer
     private var _session: SessionType = .Idle
-    private var _focusDuration: Double = 25*60
-    private var _shortBreakDuration: Double = 5*60
-    private var _longBreakDuration: Double = 15*60
     private var _streaks: Int = 0
-    private var _streaksToLongBreak: Int = 4
+    private var _settings: Settings
     
     // MARK: - Delegate
     public var delegate: PomodoroTimerDelegate?
@@ -48,28 +46,17 @@ public class PomodoroTimer {
 // MARK: - Convenience Initializers
 public extension PomodoroTimer {
     
-    convenience init?(focus: Double, short: Double, long: Double) {
-        guard focus > 0, short > 0, long > 0 else {
-            return nil
-        }
+    convenience init?(focus: Double, short: Double, long: Double, streaks: Int) {
+        let settings = Settings(focusDuration: focus, shortBreakDuration: short, longBreakDuration: long, streaksToLongBreak: streaks)
+        
+        guard let validSettings = settings else { return nil }
         
         self.init()
-        
-        _focusDuration = focus
-        _shortBreakDuration = short
-        _longBreakDuration = long
+        _settings = validSettings
     }
     
-    convenience init?(focusMinutes: Double, shortMinutes: Double, longMinutes: Double) {
-        guard focusMinutes > 0, shortMinutes > 0, longMinutes > 0 else {
-            return nil
-        }
-        
-        self.init()
-        
-        _focusDuration = focusMinutes*60
-        _shortBreakDuration = shortMinutes*60
-        _longBreakDuration = longMinutes*60
+    convenience init?(focusMinutes: Double, shortMinutes: Double, longMinutes: Double, streaks: Int) {
+        self.init(focus:focusMinutes*60, short:shortMinutes*60, long:longMinutes*60, streaks:streaks)
     }
 }
 
@@ -90,13 +77,26 @@ extension PomodoroTimer: STimerDelegate {
 
 // MARK: - Timer
 public extension PomodoroTimer {
+    
     var isActive: Bool {
         return _timer.isActive
     }
     
     var secondsRemaining: Double {
-        if session == .Idle { return focusDuration }
+        if session == .Idle { return _settings.focusDuration }
         return _timer.secondsRemaining
+    }
+}
+
+// MARK: - Settings
+public extension PomodoroTimer {
+    
+    var settings: Settings {
+        get { _settings }
+        set {
+            _settings = newValue
+            delegate?.pomodoroTimer(self, didChangedSettings: _settings)
+        }
     }
 }
 
@@ -118,11 +118,11 @@ public extension PomodoroTimer {
         
         switch session {
         case .Focus:
-            seconds = _focusDuration
+            seconds = _settings.focusDuration
         case .ShortBreak:
-            seconds = _shortBreakDuration
+            seconds = _settings.shortBreakDuration
         case .LongBreak:
-            seconds = _longBreakDuration
+            seconds = _settings.longBreakDuration
         default:
             seconds = 0
         }
@@ -143,16 +143,8 @@ public extension PomodoroTimer {
     }
     
     // MARK: - Focus
-    var focusDuration: Double {
-        return _focusDuration
-    }
-    
-    var focusMinutesDuration: Double {
-        return _focusDuration/60
-    }
-    
     func startFocus() {
-        startSession(seconds: _focusDuration, session: .Focus)
+        startSession(seconds: _settings.focusDuration, session: .Focus)
     }
     
     func startFocus(seconds: Double) {
@@ -160,24 +152,8 @@ public extension PomodoroTimer {
     }
     
     // MARK: - Break
-    var shortBreakDuration: Double {
-        return _shortBreakDuration
-    }
-    
-    var shortBreakMinutesDuration: Double {
-        return _shortBreakDuration/60
-    }
-    
-    var longBreakDuration: Double {
-        return _longBreakDuration
-    }
-    
-    var longBreakMinutesDuration: Double {
-        return _longBreakDuration/60
-    }
-    
     func startShortBreak() {
-        startSession(seconds: _shortBreakDuration, session: .ShortBreak)
+        startSession(seconds: _settings.shortBreakDuration, session: .ShortBreak)
     }
     
     func startShortBreak(seconds: Double) {
@@ -185,7 +161,7 @@ public extension PomodoroTimer {
     }
     
     func startLongBreak() {
-        startSession(seconds: _longBreakDuration, session: .LongBreak)
+        startSession(seconds: _settings.longBreakDuration, session: .LongBreak)
     }
     
     func startLongBreak(seconds: Double) {
@@ -201,7 +177,7 @@ public extension PomodoroTimer {
     }
     
     func getNextBreakType() -> SessionType {
-        return _streaks < streaksToLongBreak ? .ShortBreak : .LongBreak
+        return _streaks < _settings.streaksToLongBreak ? .ShortBreak : .LongBreak
     }
     
     // MARK: - Pause
@@ -244,11 +220,6 @@ public extension PomodoroTimer {
         set { _streaks = max(newValue, 0) }
     }
     
-    var streaksToLongBreak: Int {
-        get { _streaksToLongBreak }
-        set { _streaksToLongBreak = max(newValue, 0) }
-    }
-    
     func resetStreaks() {
         _streaks = 0
     }
@@ -270,7 +241,7 @@ public extension PomodoroTimer {
         }
         
         let nextBreakType = getNextBreakType()
-        let breakDuration = nextBreakType == .ShortBreak ? shortBreakDuration : longBreakDuration
+        let breakDuration = nextBreakType == .ShortBreak ? _settings.shortBreakDuration : _settings.longBreakDuration
         
         return Date(timeIntervalSinceNow: TimeInterval(secondsRemaining+breakDuration))
     }
