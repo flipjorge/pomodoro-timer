@@ -591,18 +591,19 @@ final class PomodoroTimerTests: XCTestCase {
         wait(for: [exp], timeout: 2)
     }
     
-    func test_resumeIdleSession_doesntNotifies() {
+    func test_resumeIdleSession_notifiesResume() {
         
         let exp = expectation(description: "Does not notifies")
         let delegate = PomodoroTimerMockDelegate()
         delegate.didResumeSession = { timer, session in
+            XCTAssertFalse(timer.isActive)
+            XCTAssertEqual(timer.session, .Idle)
             exp.fulfill()
         }
         timer.delegate = delegate
         timer.resumeSession(seconds: 45, session: .Idle)
         
-        let result = XCTWaiter.wait(for: [exp], timeout: 1)
-        XCTAssertEqual(result, .timedOut)
+        wait(for: [exp], timeout: 2)
     }
     
     func test_changeSettings_notifiesChange() {
@@ -771,5 +772,87 @@ final class PomodoroTimerTests: XCTestCase {
         let endTime = timer.getBreakEndTime()
         
         XCTAssertEqual(endTime?.timeIntervalSinceNow.rounded(), 5*60)
+    }
+    
+    // MARK: - State
+    func test_getCurrentState_whileFocusActive_matchValues() {
+        timer.startFocus()
+        let state = timer.getCurrentState()
+        
+        XCTAssertEqual(state.type, .Focus)
+        XCTAssertEqual(state.active, timer.isActive)
+        XCTAssertEqual(state.streak, 0)
+        XCTAssertNil(state.secondsRemaining)
+        XCTAssertEqual(state.endTime?.timeIntervalSinceNow.rounded(), Date(timeIntervalSinceNow: _defaultFocusMinutes*_secondsPerMinute).timeIntervalSinceNow.rounded())
+    }
+    
+    func test_getCurrentState_whileIdle_matchValues() {
+        let state = timer.getCurrentState()
+        
+        XCTAssertEqual(state.type, .Idle)
+        XCTAssertEqual(state.active, false)
+        XCTAssertEqual(state.streak, 0)
+        XCTAssertEqual(state.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        XCTAssertNil(state.endTime)
+    }
+    
+    func test_getCurrentState_whileFocusAndPaused_matchValues() {
+        timer.startFocus()
+        timer.pause()
+        let state = timer.getCurrentState()
+        
+        XCTAssertEqual(state.type, .Focus)
+        XCTAssertEqual(state.active, false)
+        XCTAssertEqual(state.streak, 0)
+        XCTAssertEqual(state.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        XCTAssertNil(state.endTime)
+    }
+    
+    func test_setState_withFocusActive_startsFocusSession() {
+        timer.startFocus()
+        let state = timer.getCurrentState()
+        timer.cancel()
+        
+        let exp = expectation(description: "Set state")
+        let result = XCTWaiter.wait(for: [exp], timeout: 3)
+        if result == .timedOut {
+            timer.setState(state)
+            
+            XCTAssertEqual(timer.session, .Focus)
+            XCTAssertTrue(timer.isActive)
+            XCTAssertLessThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute - 1)
+        }
+    }
+    
+    func test_setState_withFocusPause_pausesFocusSession() {
+        timer.startFocus()
+        timer.pause()
+        let state = timer.getCurrentState()
+        timer.cancel()
+        
+        let exp = expectation(description: "Set state")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if result == .timedOut {
+            timer.setState(state)
+            
+            XCTAssertEqual(timer.session, .Focus)
+            XCTAssertFalse(timer.isActive)
+            XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        }
+    }
+    
+    func test_setState_withIdle_staysIdle() {
+        let state = timer.getCurrentState()
+        timer.startFocus()
+        
+        let exp = expectation(description: "Set state")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if result == .timedOut {
+            timer.setState(state)
+            
+            XCTAssertEqual(timer.session, .Idle)
+            XCTAssertFalse(timer.isActive)
+            XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        }
     }
 }

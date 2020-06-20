@@ -104,7 +104,7 @@ public extension PomodoroTimer {
 public extension PomodoroTimer {
     
     // MARK: - Type
-    enum SessionType: Int {
+    enum SessionType: Int, Codable {
         case Idle, Focus, ShortBreak, LongBreak
     }
     
@@ -195,9 +195,7 @@ public extension PomodoroTimer {
     }
     
     func resumeSession(seconds: Double, session: SessionType) {
-        guard session != .Idle else { return }
-        
-        _timer.start(seconds)
+        if session != .Idle { _timer.start(seconds) }
         _session = session
         
         delegate?.pomodoroTimer(self, didResumeSession: _session)
@@ -244,5 +242,42 @@ public extension PomodoroTimer {
         let breakDuration = nextBreakType == .ShortBreak ? _settings.shortBreakDuration : _settings.longBreakDuration
         
         return Date(timeIntervalSinceNow: TimeInterval(secondsRemaining+breakDuration))
+    }
+}
+
+// MARK: - State
+public extension PomodoroTimer {
+    
+    func getCurrentState() -> State {
+        
+        if let endTime = getCurrentSessionEndTime() {
+            return State(activeWithType: _session, streak: streaksCount, endTime: endTime)
+        }
+        
+        return State(inactiveWithType: _session, streak: streaksCount, secondsRemaining: secondsRemaining)
+    }
+    
+    func setState(_ state: State) {
+        
+        let duration: Double
+        
+        switch state.type {
+        case .ShortBreak:
+            duration = _settings.shortBreakDuration
+        case .LongBreak:
+            duration = _settings.longBreakDuration
+        default:
+            duration = _settings.focusDuration
+        }
+        
+        let secondsRemaining = state.endTime?.timeIntervalSinceNow.rounded() ?? state.secondsRemaining ?? duration
+        
+        if secondsRemaining == duration {
+            startSession(seconds: secondsRemaining, session: state.type)
+        } else {
+            resumeSession(seconds: secondsRemaining, session: state.type)
+        }
+        
+        if !state.active { _timer.pause() }
     }
 }
