@@ -26,10 +26,10 @@ import PomodoroTimer
 final class PomodoroTimerTests: XCTestCase {
     
     // MARK: - Properties
-    private let _secondsPerMinute = 60
-    private let _defaultFocusMinutes = 25
-    private let _defaultShortBreakMinutes = 5
-    private let _defaultLongBreakMinutes = 15
+    private let _secondsPerMinute = 60.0
+    private let _defaultFocusMinutes = 25.0
+    private let _defaultShortBreakMinutes = 5.0
+    private let _defaultLongBreakMinutes = 15.0
     
     // MARK: - Setup
     var timer: PomodoroTimer!
@@ -75,16 +75,16 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
     }
     
-    func test_init_given90Seconds_minutePropertiesCeilRoundsTo1Minute() {
+    func test_init_given90Seconds_minutePropertiesReturnOneAndHalf() {
         timer = PomodoroTimer(focus: 90, short: 90, long: 90)
         
         XCTAssertEqual(timer.focusDuration, 90)
         XCTAssertEqual(timer.shortBreakDuration, 90)
         XCTAssertEqual(timer.longBreakDuration, 90)
         
-        XCTAssertEqual(timer.focusMinutesDuration, 1)
-        XCTAssertEqual(timer.shortBreakMinutesDuration, 1)
-        XCTAssertEqual(timer.longBreakMinutesDuration, 1)
+        XCTAssertEqual(timer.focusMinutesDuration, 1.5)
+        XCTAssertEqual(timer.shortBreakMinutesDuration, 1.5)
+        XCTAssertEqual(timer.longBreakMinutesDuration, 1.5)
     }
     
     func test_init_givenValidArgsInMinutes_initializesWithCorrectValues() {
@@ -583,14 +583,14 @@ final class PomodoroTimerTests: XCTestCase {
         var didPauseSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
         var didResumeSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
         var didEndSession: (( PomodoroTimer, PomodoroTimer.SessionType ) -> Void)?
-        var didTick: (( PomodoroTimer, Int ) -> Void)?
+        var didTick: (( PomodoroTimer, Double ) -> Void)?
         var didCancel: (( PomodoroTimer ) -> Void)?
         
         func pomodoroTimer(_ timer: PomodoroTimer, didStartSession session: PomodoroTimer.SessionType) {
             didStartSession?(timer, session)
         }
         
-        func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Int) {
+        func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Double) {
             didTick?(timer, timer.secondsRemaining)
         }
         

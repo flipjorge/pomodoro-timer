@@ -26,7 +26,7 @@ public protocol PomodoroTimerDelegate {
     func pomodoroTimer(_ timer: PomodoroTimer, didResumeSession session: PomodoroTimer.SessionType)
     func pomodoroTimer(_ timer: PomodoroTimer, didEndSession session:PomodoroTimer.SessionType)
     func pomodoroTimerDidCancel(_ timer: PomodoroTimer)
-    func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Int)
+    func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Double)
 }
 
 public extension PomodoroTimerDelegate {
@@ -35,5 +35,5 @@ public extension PomodoroTimerDelegate {
     func pomodoroTimer(_ timer: PomodoroTimer, didResumeSession session: PomodoroTimer.SessionType) { }
     func pomodoroTimer(_ timer: PomodoroTimer, didEndSession session:PomodoroTimer.SessionType) { }
     func pomodoroTimerDidCancel(_ timer: PomodoroTimer) { }
-    func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Int) { }
+    func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Double) { }
 }
