@@ -39,6 +39,7 @@ public class PomodoroTimer {
     private var _shortBreakDuration: Int = 5*60
     private var _longBreakDuration: Int = 15*60
     private var _streaks: Int = 0
+    private var _streaksToLongBreak: Int = 4
     
     // MARK: - Delegate
     public var delegate: PomodoroTimerDelegate?
@@ -200,7 +201,7 @@ public extension PomodoroTimer {
     }
     
     func getNextBreakType() -> SessionType {
-        return _streaks < 4 ? .ShortBreak : .LongBreak
+        return _streaks < streaksToLongBreak ? .ShortBreak : .LongBreak
     }
     
     // MARK: - Pause
@@ -241,6 +242,11 @@ public extension PomodoroTimer {
     var streaksCount: Int {
         get { _streaks }
         set { _streaks = max(newValue, 0) }
+    }
+    
+    var streaksToLongBreak: Int {
+        get { _streaksToLongBreak }
+        set { _streaksToLongBreak = max(newValue, 0) }
     }
     
     func resetStreaks() {

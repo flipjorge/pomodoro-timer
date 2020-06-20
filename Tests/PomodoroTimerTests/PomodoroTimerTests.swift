@@ -300,7 +300,7 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_getNextBreakOnFocusAndThreeStreaks_returnsShortBreak() {
-        timer.streaksCount = 3
+        timer.streaksCount = timer.streaksToLongBreak - 1
         timer.startFocus()
         let sessionType = timer.getNextBreakType()
         
@@ -308,7 +308,7 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_getNextBreakOnFocusAndFourStreaks_returnsLongBreak() {
-        timer.streaksCount = 4
+        timer.streaksCount = timer.streaksToLongBreak
         timer.startFocus()
         let sessionType = timer.getNextBreakType()
         
@@ -322,7 +322,7 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_startBreak_whenStreaksIsThree_startsShortBreak() {
-        timer.streaksCount = 3
+        timer.streaksCount = timer.streaksToLongBreak - 1
         timer.startBreak()
         
         XCTAssertEqual(timer.session, .ShortBreak)
@@ -667,6 +667,12 @@ final class PomodoroTimerTests: XCTestCase {
         
         XCTAssertEqual(timer.streaksCount, 0)
     }
+    
+    func test_setCustomStreaksToLongBreak_setsValue() {
+        timer.streaksToLongBreak = 6
+        XCTAssertEqual(timer.streaksToLongBreak, 6)
+    }
+    
     
     // MARK: - Get End Time
     func test_getEndTime_onIdle_returnsNil() {
