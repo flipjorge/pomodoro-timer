@@ -855,4 +855,39 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
         }
     }
+    
+    func test_setState_withExpiredFocusSession_startsBreak() {
+        timer.startFocus(seconds: 1)
+        let state = timer.getCurrentState()
+        timer.cancel()
+        
+        let exp = expectation(description: "Set state")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if result == .timedOut {
+            timer.setState(state)
+            
+            XCTAssertEqual(timer.session, .ShortBreak)
+            XCTAssertTrue(timer.isActive)
+            XCTAssertLessThanOrEqual(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute)
+            XCTAssertGreaterThan(timer.secondsRemaining, 0)
+        }
+    }
+    
+    func test_setState_withExpiredFocusAndBreakSessions_staysIdle() {
+        timer = PomodoroTimer(focus: 1, short: 1, long: 1, streaks: 4)
+        timer.startFocus()
+        let state = timer.getCurrentState()
+        timer.cancel()
+        
+        let exp = expectation(description: "Set state")
+        let result = XCTWaiter.wait(for: [exp], timeout: 3)
+        if result == .timedOut {
+            timer.setState(state)
+            
+            XCTAssertEqual(timer.session, .Idle)
+            XCTAssertFalse(timer.isActive)
+            XCTAssertLessThanOrEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+            XCTAssertGreaterThan(timer.secondsRemaining, 0)
+        }
+    }
 }
