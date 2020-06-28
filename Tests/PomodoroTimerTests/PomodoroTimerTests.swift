@@ -869,7 +869,7 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertEqual(timer.session, .ShortBreak)
             XCTAssertTrue(timer.isActive)
             XCTAssertLessThanOrEqual(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute)
-            XCTAssertGreaterThan(timer.secondsRemaining, 0)
+            XCTAssertGreaterThan(timer.secondsRemaining, _defaultShortBreakMinutes*_secondsPerMinute - 3)
         }
     }
     
