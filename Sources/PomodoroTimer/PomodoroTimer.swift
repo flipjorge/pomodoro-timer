@@ -46,8 +46,8 @@ public class PomodoroTimer {
 // MARK: - Convenience Initializers
 public extension PomodoroTimer {
     
-    convenience init?(focus: Double, short: Double, long: Double, streaks: Int) {
-        let settings = Settings(focusDuration: focus, shortBreakDuration: short, longBreakDuration: long, streaksToLongBreak: streaks)
+    convenience init?(focus: Double, short: Double, long: Double, streaks: Int, autoBreak: Bool) {
+        let settings = Settings(focusDuration:focus, shortBreakDuration:short, longBreakDuration:long, streaksToLongBreak:streaks, autoBreak:autoBreak)
         
         guard let validSettings = settings else { return nil }
         
@@ -55,8 +55,8 @@ public extension PomodoroTimer {
         _settings = validSettings
     }
     
-    convenience init?(focusMinutes: Double, shortMinutes: Double, longMinutes: Double, streaks: Int) {
-        self.init(focus:focusMinutes*60, short:shortMinutes*60, long:longMinutes*60, streaks:streaks)
+    convenience init?(focusMinutes: Double, shortMinutes: Double, longMinutes: Double, streaks: Int, autoBreak: Bool) {
+        self.init(focus:focusMinutes*60, short:shortMinutes*60, long:longMinutes*60, streaks:streaks, autoBreak:autoBreak)
     }
 }
 
@@ -72,6 +72,12 @@ extension PomodoroTimer: STimerDelegate {
         else if _session == .LongBreak { resetStreaks() }
         
         delegate?.pomodoroTimer(self, didEndSession: _session)
+        
+        if settings.autoBreak && session == .Focus {
+            startBreak()
+        } else if session.isBreak() {
+            startSession(session: .Idle)
+        }
     }
 }
 
@@ -291,7 +297,7 @@ public extension PomodoroTimer {
         if secondsRemaining == duration {
             startSession(seconds: secondsRemaining, session: state.type)
         } else if secondsRemaining < 0 {
-            if state.type == .Focus && abs(secondsRemaining) < getNextBreakDuration() {
+            if settings.autoBreak && state.type == .Focus && abs(secondsRemaining) < getNextBreakDuration() {
                 startBreak(seconds: getNextBreakDuration() - abs(secondsRemaining))
             } else {
                 startSession(session: .Idle)

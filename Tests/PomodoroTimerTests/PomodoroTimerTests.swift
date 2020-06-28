@@ -60,6 +60,7 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.settings.streaksToLongBreak, _defaultStreaks)
         XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
         XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        XCTAssertTrue(timer.settings.autoBreak)
     }
     
     func test_initWithSettings_initsWithSettingsValues() {
@@ -70,7 +71,7 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_init_givenValidArgsInSeconds_initializesWithCorrectValues() {
-        timer = PomodoroTimer(focus: _defaultFocusMinutes*_secondsPerMinute, short: _defaultShortBreakMinutes*_secondsPerMinute, long: _defaultLongBreakMinutes*_secondsPerMinute, streaks: _defaultStreaks)
+        timer = PomodoroTimer(focus: _defaultFocusMinutes*_secondsPerMinute, short: _defaultShortBreakMinutes*_secondsPerMinute, long: _defaultLongBreakMinutes*_secondsPerMinute, streaks: _defaultStreaks, autoBreak: false)
         
         XCTAssertEqual(timer.settings.focusDuration, _defaultFocusMinutes*_secondsPerMinute)
         XCTAssertEqual(timer.settings.shortBreakDuration, _defaultShortBreakMinutes*_secondsPerMinute)
@@ -83,10 +84,11 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.settings.streaksToLongBreak, _defaultStreaks)
         XCTAssertEqual(timer.session, PomodoroTimer.SessionType.Idle)
         XCTAssertEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
+        XCTAssertFalse(timer.settings.autoBreak)
     }
     
     func test_init_given90Seconds_minutePropertiesReturnOneAndHalf() {
-        timer = PomodoroTimer(focus: 90, short: 90, long: 90, streaks: 6)
+        timer = PomodoroTimer(focus: 90, short: 90, long: 90, streaks: 6, autoBreak: true)
         
         XCTAssertEqual(timer.settings.focusDuration, 90)
         XCTAssertEqual(timer.settings.shortBreakDuration, 90)
@@ -100,7 +102,7 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_init_givenValidArgsInMinutes_initializesWithCorrectValues() {
-        timer = PomodoroTimer(focusMinutes: 40, shortMinutes: 10, longMinutes: 25, streaks: 7)
+        timer = PomodoroTimer(focusMinutes: 40, shortMinutes: 10, longMinutes: 25, streaks: 7, autoBreak: true)
         
         XCTAssertEqual(timer.settings.focusDuration, 40*_secondsPerMinute)
         XCTAssertEqual(timer.settings.shortBreakDuration, 10*_secondsPerMinute)
@@ -116,13 +118,13 @@ final class PomodoroTimerTests: XCTestCase {
     }
     
     func test_init_givenInvalidArgs_failsInit() {
-        timer = PomodoroTimer(focus: -10, short: _defaultShortBreakMinutes, long: _defaultLongBreakMinutes, streaks: _defaultStreaks)
+        timer = PomodoroTimer(focus: -10, short: _defaultShortBreakMinutes, long: _defaultLongBreakMinutes, streaks: _defaultStreaks, autoBreak: true)
         
         XCTAssertNil(timer)
     }
     
     func test_init_givenInvalidArgsInMinutes_failsInit() {
-        timer = PomodoroTimer(focusMinutes: -10, shortMinutes: _defaultShortBreakMinutes, longMinutes: _defaultShortBreakMinutes, streaks: _defaultStreaks)
+        timer = PomodoroTimer(focusMinutes: -10, shortMinutes: _defaultShortBreakMinutes, longMinutes: _defaultShortBreakMinutes, streaks: _defaultStreaks, autoBreak: true)
         
         XCTAssertNil(timer)
     }
@@ -135,15 +137,17 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.settings.shortBreakDuration, 5*60)
         XCTAssertEqual(timer.settings.longBreakDuration, 15*60)
         XCTAssertEqual(timer.settings.streaksToLongBreak, 4)
+        XCTAssertTrue(timer.settings.autoBreak)
     }
     
     func test_setSettingsCustomValues_updateSettingsWithCustomValues() {
-        timer.settings = PomodoroTimer.Settings(focusDuration: 43, shortBreakDuration: 12, longBreakDuration: 23, streaksToLongBreak: 6) ?? PomodoroTimer.Settings()
+        timer.settings = PomodoroTimer.Settings(focusDuration: 43, shortBreakDuration: 12, longBreakDuration: 23, streaksToLongBreak: 6, autoBreak: false) ?? PomodoroTimer.Settings()
         
         XCTAssertEqual(timer.settings.focusDuration, 43)
         XCTAssertEqual(timer.settings.shortBreakDuration, 12)
         XCTAssertEqual(timer.settings.longBreakDuration, 23)
         XCTAssertEqual(timer.settings.streaksToLongBreak, 6)
+        XCTAssertFalse(timer.settings.autoBreak)
     }
     
     // MARK: - Start Session
@@ -589,7 +593,7 @@ final class PomodoroTimerTests: XCTestCase {
             XCTAssertEqual(timer.session, .Focus)
             exp.fulfill()
         }
-        timer = PomodoroTimer(focus: 3, short: 2, long: 2, streaks: _defaultStreaks)
+        timer = PomodoroTimer(focus: 3, short: 2, long: 2, streaks: _defaultStreaks, autoBreak: true)
         timer.delegate = delegate
         timer.startFocus()
         
@@ -876,7 +880,7 @@ final class PomodoroTimerTests: XCTestCase {
         }
     }
     
-    func test_setState_withExpiredFocusSession_startsBreak() {
+    func test_setState_withAutoBreak_expiredFocusSession_startsBreak() {
         timer.startFocus(seconds: 1)
         let state = timer.getCurrentState()
         timer.cancel()
@@ -893,6 +897,22 @@ final class PomodoroTimerTests: XCTestCase {
         }
     }
     
+    func test_setState_withoutAutoBreak_expiredFocusSession_startsBreak() {
+        timer = PomodoroTimer(focus: 25, short: 5, long: 15, streaks: 4, autoBreak: false)
+        timer.startFocus(seconds: 1)
+        let state = timer.getCurrentState()
+        timer.cancel()
+        
+        let exp = expectation(description: "Set state")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if result == .timedOut {
+            timer.setState(state)
+            
+            XCTAssertEqual(timer.session, .Idle)
+            XCTAssertFalse(timer.isActive)
+        }
+    }
+    
     func test_setState_withExpiredBreakSession_staysIdle() {
         timer.startShortBreak(seconds: 1)
         let state = timer.getCurrentState()
@@ -905,13 +925,11 @@ final class PomodoroTimerTests: XCTestCase {
             
             XCTAssertEqual(timer.session, .Idle)
             XCTAssertFalse(timer.isActive)
-            XCTAssertLessThanOrEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
-            XCTAssertGreaterThan(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute - 3)
         }
     }
     
     func test_setState_withExpiredFocusAndBreakSessions_staysIdle() {
-        timer = PomodoroTimer(focus: 1, short: 1, long: 1, streaks: 4)
+        timer = PomodoroTimer(focus: 1, short: 1, long: 1, streaks: 4, autoBreak: true)
         timer.startFocus()
         let state = timer.getCurrentState()
         timer.cancel()
@@ -923,8 +941,46 @@ final class PomodoroTimerTests: XCTestCase {
             
             XCTAssertEqual(timer.session, .Idle)
             XCTAssertFalse(timer.isActive)
-            XCTAssertLessThanOrEqual(timer.secondsRemaining, _defaultFocusMinutes*_secondsPerMinute)
-            XCTAssertGreaterThan(timer.secondsRemaining, 0)
+        }
+    }
+    
+    // MARK: Auto Break
+    func test_startFocus_startsBreakAfter() {
+        timer.startFocus(seconds: 1)
+        
+        let exp = expectation(description: "starts break")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if result == .timedOut {
+            XCTAssertEqual(timer.session, .ShortBreak)
+            XCTAssertTrue(timer.isActive)
+        }
+    }
+    
+    func test_startFocusWithoutAutoBreak_staysInactiveAtFocus() {
+        guard let settings = PomodoroTimer.Settings(focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, streaksToLongBreak: 4, autoBreak: false) else {
+            XCTFail()
+            return
+        }
+        
+        timer = PomodoroTimer(settings: settings)
+        timer.startFocus(seconds: 1)
+        
+        let exp = expectation(description: "stays inactive at focus")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if result == .timedOut {
+            XCTAssertEqual(timer.session, .Focus)
+            XCTAssertFalse(timer.isActive)
+        }
+    }
+    
+    func test_startBreak_staysIdleAtEnd() {
+        timer.startShortBreak(seconds: 1)
+        
+        let exp = expectation(description: "starts break")
+        let result = XCTWaiter.wait(for: [exp], timeout: 2)
+        if result == .timedOut {
+            XCTAssertEqual(timer.session, .Idle)
+            XCTAssertFalse(timer.isActive)
         }
     }
 }

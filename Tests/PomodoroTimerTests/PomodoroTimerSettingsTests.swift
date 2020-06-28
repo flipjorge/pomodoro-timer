@@ -33,19 +33,21 @@ final class PomodoroTimerSettingsTests: XCTestCase {
         XCTAssertEqual(settings.shortBreakDuration, 5*60)
         XCTAssertEqual(settings.longBreakDuration, 15*60)
         XCTAssertEqual(settings.streaksToLongBreak, 4)
+        XCTAssertTrue(settings.autoBreak)
     }
     
     func test_initWithCustomArgs_initWithCustomValues() {
-        let settings = PomodoroTimer.Settings(focusDuration: 40, shortBreakDuration: 7, longBreakDuration: 20, streaksToLongBreak: 6)
+        let settings = PomodoroTimer.Settings(focusDuration: 40, shortBreakDuration: 7, longBreakDuration: 20, streaksToLongBreak: 6, autoBreak: false)
         
         XCTAssertEqual(settings?.focusDuration, 40)
         XCTAssertEqual(settings?.shortBreakDuration, 7)
         XCTAssertEqual(settings?.longBreakDuration, 20)
         XCTAssertEqual(settings?.streaksToLongBreak, 6)
+        XCTAssertEqual(settings?.autoBreak, false)
     }
     
     func test_initWithNegativeValue_failsInit() {
-        let settings = PomodoroTimer.Settings(focusDuration: -25, shortBreakDuration: -5, longBreakDuration: -15, streaksToLongBreak: -2)
+        let settings = PomodoroTimer.Settings(focusDuration: -25, shortBreakDuration: -5, longBreakDuration: -15, streaksToLongBreak: -2, autoBreak: true)
         
         XCTAssertNil(settings)
     }
@@ -60,7 +62,7 @@ final class PomodoroTimerSettingsTests: XCTestCase {
     
     func test_compareDifferentSettings_returnsFalse() {
         let settings1 = PomodoroTimer.Settings()
-        let settings2 = PomodoroTimer.Settings(focusDuration: 344, shortBreakDuration: 55, longBreakDuration: 96, streaksToLongBreak: 6)
+        let settings2 = PomodoroTimer.Settings(focusDuration: 344, shortBreakDuration: 55, longBreakDuration: 96, streaksToLongBreak: 6, autoBreak: true)
         
         XCTAssertNotEqual(settings1, settings2)
     }
@@ -82,7 +84,8 @@ final class PomodoroTimerSettingsTests: XCTestCase {
             "fd" : 45,
             "sbd" : 4,
             "lbd" : 16,
-            "slb" : 5
+            "slb" : 5,
+            "ab" : true
         }
         """.utf8)
         
@@ -92,6 +95,7 @@ final class PomodoroTimerSettingsTests: XCTestCase {
         XCTAssertEqual(decodedSettings.shortBreakDuration, 4)
         XCTAssertEqual(decodedSettings.longBreakDuration, 16)
         XCTAssertEqual(decodedSettings.streaksToLongBreak, 5)
+        XCTAssertTrue(decodedSettings.autoBreak)
     }
     
     func test_decodingFromInvalidJsonString_throws() throws {

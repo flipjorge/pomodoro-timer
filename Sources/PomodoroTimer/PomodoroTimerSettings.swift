@@ -29,6 +29,7 @@ public extension PomodoroTimer {
         public let shortBreakDuration: Double
         public let longBreakDuration: Double
         public let streaksToLongBreak: Int
+        public let autoBreak: Bool
         
         // MARK: - Initializers
         public init() {
@@ -36,9 +37,10 @@ public extension PomodoroTimer {
             shortBreakDuration = 5*60
             longBreakDuration = 15*60
             streaksToLongBreak = 4
+            autoBreak = true
         }
         
-        public init?(focusDuration: Double, shortBreakDuration: Double, longBreakDuration: Double, streaksToLongBreak: Int) {
+        public init?(focusDuration: Double, shortBreakDuration: Double, longBreakDuration: Double, streaksToLongBreak: Int, autoBreak:Bool) {
             
             guard focusDuration > 0, shortBreakDuration > 0, longBreakDuration > 0, streaksToLongBreak > 0 else {
                 return nil
@@ -48,6 +50,7 @@ public extension PomodoroTimer {
             self.shortBreakDuration = shortBreakDuration
             self.longBreakDuration = longBreakDuration
             self.streaksToLongBreak = streaksToLongBreak
+            self.autoBreak = autoBreak
         }
         
         // MARK: - Properties
@@ -63,13 +66,13 @@ public extension PomodoroTimer {
             return longBreakDuration/60
         }
         
-        
         // MARK: - Coding Keys
         enum CodingKeys: String, CodingKey {
             case focusDuration = "fd"
             case shortBreakDuration = "sbd"
             case longBreakDuration = "lbd"
             case streaksToLongBreak = "slb"
+            case autoBreak = "ab"
         }
     }
 }
