@@ -176,8 +176,20 @@ public extension PomodoroTimer {
         }
     }
     
+    func startBreak(seconds: Double) {
+        if getNextBreakType() == .ShortBreak {
+            startShortBreak(seconds: seconds)
+        } else {
+            startLongBreak(seconds: seconds)
+        }
+    }
+    
     func getNextBreakType() -> SessionType {
         return _streaks < _settings.streaksToLongBreak ? .ShortBreak : .LongBreak
+    }
+    
+    func getNextBreakDuration() -> Double {
+        return getNextBreakType() == .LongBreak ? settings.longBreakDuration : settings.shortBreakDuration
     }
     
     // MARK: - Pause
