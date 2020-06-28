@@ -367,6 +367,26 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.session, .LongBreak)
     }
     
+    // MARK: - Is Idle
+    func test_whileIdle_isIdleReturnsFalse() {
+        XCTAssertFalse(timer.session.isBreak())
+    }
+    
+    func test_startFocusSession_isIdleReturnsFalse() {
+        timer.startFocus()
+        XCTAssertFalse(timer.session.isBreak())
+    }
+    
+    func test_startShortSession_isIdleReturnsTrue() {
+        timer.startShortBreak()
+        XCTAssertTrue(timer.session.isBreak())
+    }
+    
+    func test_startLongSession_isIdleReturnsTrue() {
+        timer.startLongBreak()
+        XCTAssertTrue(timer.session.isBreak())
+    }
+    
     // MARK: - Pause
     func test_pause_stopsCounting() {
         timer.startFocus()

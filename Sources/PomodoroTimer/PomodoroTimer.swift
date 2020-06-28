@@ -106,6 +106,10 @@ public extension PomodoroTimer {
     // MARK: - Type
     enum SessionType: Int, Codable {
         case Idle, Focus, ShortBreak, LongBreak
+        
+        public func isBreak() -> Bool {
+            return self == .ShortBreak || self == .LongBreak
+        }
     }
     
     // MARK: - Session
