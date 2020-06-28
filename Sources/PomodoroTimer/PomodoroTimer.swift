@@ -286,8 +286,8 @@ public extension PomodoroTimer {
         
         if secondsRemaining == duration {
             startSession(seconds: secondsRemaining, session: state.type)
-        } else if state.type == .Focus && secondsRemaining < 0 {
-            if abs(secondsRemaining) < getNextBreakDuration() {
+        } else if secondsRemaining < 0 {
+            if state.type == .Focus && abs(secondsRemaining) < getNextBreakDuration() {
                 startBreak(seconds: getNextBreakDuration() - abs(secondsRemaining))
             } else {
                 startSession(session: .Idle)
