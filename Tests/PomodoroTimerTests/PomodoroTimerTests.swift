@@ -448,6 +448,50 @@ final class PomodoroTimerTests: XCTestCase {
         XCTAssertEqual(timer.secondsRemaining, 67)
     }
     
+    // MARK: - Finish
+    func test_finishFocus_shouldIncreaseStreaksAndGoBreak() {
+        timer.streaksCount = 2
+        timer.startFocus()
+        timer.finish()
+        
+        XCTAssertEqual(timer.streaksCount, 3)
+        XCTAssertTrue(timer.session.isBreak())
+    }
+    
+    func test_finishShortBreak_shouldGoIdleAndKeepStreaks() {
+        timer.streaksCount = 2
+        timer.startShortBreak()
+        timer.finish()
+        
+        XCTAssertEqual(timer.streaksCount, 2)
+        XCTAssertEqual(timer.session, .Idle)
+    }
+    
+    func test_finishLongBreak_shouldGoIdleAndResetStreaks() {
+        timer.streaksCount = 4
+        timer.startLongBreak()
+        timer.finish()
+        
+        XCTAssertEqual(timer.streaksCount, 0)
+        XCTAssertEqual(timer.session, .Idle)
+    }
+    
+    func test_finish_notifies() {
+        timer.startFocus()
+        
+        let exp = expectation(description: "notifies")
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didEndSession = { timer, session in
+            XCTAssertEqual(session, .Focus)
+            exp.fulfill()
+        }
+        
+        timer.delegate = delegate
+        timer.finish()
+        
+        wait(for: [exp], timeout: 1)
+    }
+    
     // MARK: - Cancel
     func test_cancel_stopsRunningAndResetsTime() {
         timer.startFocus()

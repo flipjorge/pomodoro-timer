@@ -68,16 +68,7 @@ extension PomodoroTimer: STimerDelegate {
     }
     
     public func clockDidEnd(_ clock: STimer) {
-        if _session == .Focus { _streaks += 1 }
-        else if _session == .LongBreak { resetStreaks() }
-        
-        delegate?.pomodoroTimer(self, didEndSession: _session)
-        
-        if settings.autoBreak && session == .Focus {
-            startBreak()
-        } else if session.isBreak() {
-            startSession(session: .Idle)
-        }
+        finish()
     }
 }
 
@@ -221,6 +212,20 @@ public extension PomodoroTimer {
         _session = session
         
         delegate?.pomodoroTimer(self, didResumeSession: _session)
+    }
+    
+    // MARK: - Finish
+    func finish() {
+        if _session == .Focus { _streaks += 1 }
+        else if _session == .LongBreak { resetStreaks() }
+        
+        delegate?.pomodoroTimer(self, didEndSession: _session)
+        
+        if settings.autoBreak && session == .Focus {
+            startBreak()
+        } else if session.isBreak() {
+            startSession(session: .Idle)
+        }
     }
     
     // MARK: - Cancel
