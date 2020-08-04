@@ -28,6 +28,7 @@ public protocol PomodoroTimerDelegate {
     func pomodoroTimerDidCancel(_ timer: PomodoroTimer)
     func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Double)
     func pomodoroTimer(_ timer: PomodoroTimer, didChangedSettings settings: PomodoroTimer.Settings)
+    func pomodoroTimerDidResetStreaks(_ timer: PomodoroTimer)
 }
 
 public extension PomodoroTimerDelegate {
@@ -38,4 +39,5 @@ public extension PomodoroTimerDelegate {
     func pomodoroTimerDidCancel(_ timer: PomodoroTimer) { }
     func pomodoroTimer(_ timer: PomodoroTimer, didTickWith seconds: Double) { }
     func pomodoroTimer(_ timer: PomodoroTimer, didChangedSettings settings: PomodoroTimer.Settings) { }
+    func pomodoroTimerDidResetStreaks(_ timer: PomodoroTimer) { }
 }

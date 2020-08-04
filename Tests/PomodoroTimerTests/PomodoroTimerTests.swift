@@ -698,6 +698,7 @@ final class PomodoroTimerTests: XCTestCase {
         var didTick: (( PomodoroTimer, Double ) -> Void)?
         var didCancel: (( PomodoroTimer ) -> Void)?
         var didChangedSettings: (( PomodoroTimer, PomodoroTimer.Settings ) -> Void)?
+        var didResetStreaks: ((PomodoroTimer) -> Void)?
         
         func pomodoroTimer(_ timer: PomodoroTimer, didStartSession session: PomodoroTimer.SessionType) {
             didStartSession?(timer, session)
@@ -725,6 +726,10 @@ final class PomodoroTimerTests: XCTestCase {
         
         func pomodoroTimer(_ timer: PomodoroTimer, didChangedSettings settings: PomodoroTimer.Settings) {
             didChangedSettings?(timer, settings)
+        }
+        
+        func pomodoroTimerDidResetStreaks(_ timer: PomodoroTimer) {
+            didResetStreaks?(timer)
         }
     }
     
@@ -783,6 +788,21 @@ final class PomodoroTimerTests: XCTestCase {
         timer.resetStreaks()
         
         XCTAssertEqual(timer.streaksCount, 0)
+    }
+    
+    func test_resetStreaks_dispatchNotification() {
+        
+        let exp = expectation(description: "Notifies")
+        let delegate = PomodoroTimerMockDelegate()
+        delegate.didResetStreaks = { timer in
+            exp.fulfill()
+        }
+        
+        timer.delegate = delegate
+        timer.streaksCount = 3
+        timer.resetStreaks()
+        
+        wait(for: [exp], timeout: 1)
     }
     
     

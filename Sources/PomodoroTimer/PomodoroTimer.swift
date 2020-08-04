@@ -247,6 +247,8 @@ public extension PomodoroTimer {
     
     func resetStreaks() {
         _streaks = 0
+        
+        delegate?.pomodoroTimerDidResetStreaks(self)
     }
 }
 
